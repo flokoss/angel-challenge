@@ -60,7 +60,15 @@ const upload = multer({
 
 app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
-app.use(express.static(__dirname, { index: 'index.html' }));
+app.use(express.static(__dirname, {
+  index: 'index.html',
+  setHeaders: (res, filePath) => {
+    // HTML nie cachen — Handys bekommen Updates immer sofort
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+    }
+  }
+}));
 
 // Mindestmaße (exakt aus dem Original-Sheet, 0 = "keins")
 const MIN_SIZES = {
