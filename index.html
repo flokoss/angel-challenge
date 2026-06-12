@@ -752,6 +752,27 @@
             font-weight: 700;
         }
 
+        .modal-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.6em;
+            min-height: auto;
+            padding: 0;
+            z-index: 10;
+            display: none;
+        }
+
+        .modal-nav.prev { left: 8px; }
+        .modal-nav.next { right: 8px; }
+        .modal-nav.visible { display: block; }
+
         /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
@@ -858,10 +879,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Foto – PFLICHT *</label>
+                            <label>📏 Messfoto – PFLICHT * (Fisch mit Maßband/Zollstock)</label>
                             <div class="file-input-wrapper" style="position:relative;">
                                 <input type="file" id="photo" accept="image/*" required onchange="updatePhotoLabel()">
-                                <label for="photo" class="file-input-label" id="photoLabel">📷 Foto auswählen</label>
+                                <label for="photo" class="file-input-label" id="photoLabel">📏 Messfoto auswählen</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>📸 Schöne Fangfotos – optional (z.B. du mit dem Fisch)</label>
+                            <div class="file-input-wrapper" style="position:relative;">
+                                <input type="file" id="extraPhotos" accept="image/*" multiple onchange="updateExtraLabel()">
+                                <label for="extraPhotos" class="file-input-label" id="extraLabel" style="border-style:dotted; border-color:var(--text-light); color:var(--text-light);">📸 Weitere Fotos (bis zu 5)</label>
                             </div>
                         </div>
 
@@ -920,6 +949,8 @@
     <div class="modal" id="photoModal">
         <div class="modal-content" onclick="event.stopPropagation()">
             <button class="modal-close" onclick="closePhotoModal()">✕</button>
+            <button class="modal-nav prev" id="galleryPrev" onclick="galleryStep(-1)">‹</button>
+            <button class="modal-nav next" id="galleryNext" onclick="galleryStep(1)">›</button>
             <img id="modalPhoto" class="modal-img" src="" alt="Fangfoto">
             <div class="modal-info" id="modalInfo"></div>
         </div>
@@ -1031,10 +1062,22 @@
             const input = document.getElementById('photo');
             const label = document.getElementById('photoLabel');
             if (input.files.length > 0) {
-                label.textContent = '✅ Foto ausgewählt';
+                label.textContent = '✅ Messfoto ausgewählt';
                 label.classList.add('has-file');
             } else {
-                label.textContent = '📷 Foto auswählen';
+                label.textContent = '📏 Messfoto auswählen';
+                label.classList.remove('has-file');
+            }
+        }
+
+        function updateExtraLabel() {
+            const input = document.getElementById('extraPhotos');
+            const label = document.getElementById('extraLabel');
+            if (input.files.length > 0) {
+                label.textContent = `✅ ${input.files.length} Fangfoto${input.files.length > 1 ? 's' : ''} ausgewählt`;
+                label.classList.add('has-file');
+            } else {
+                label.textContent = '📸 Weitere Fotos (bis zu 5)';
                 label.classList.remove('has-file');
             }
         }
@@ -1122,6 +1165,10 @@
             formData.append('weight', document.getElementById('weight').value);
             formData.append('notes', document.getElementById('notes').value);
             formData.append('photo', photo);
+            const extras = document.getElementById('extraPhotos').files;
+            for (let i = 0; i < Math.min(extras.length, 5); i++) {
+                formData.append('extraPhotos', extras[i]);
+            }
             formData.append('deviceId', deviceId);
 
             try {
@@ -1139,6 +1186,7 @@
                 document.getElementById('angler').value = angler;
                 document.getElementById('customFishGroup').style.display = 'none';
                 updatePhotoLabel();
+                updateExtraLabel();
                 loadCatches();
             } catch (e) {
                 showToast('❌ Keine Verbindung', 'error');
@@ -1275,13 +1323,12 @@
                 .sort((a, b) => a.localeCompare(b, 'de'));
             const allSpecies = [...sheetSpecies, ...customSpecies];
 
-            let html = '<div class="species-table-head"><span>Fischart · Mindestmaß</span><span>Fänge (antippen = Foto)</span></div>';
+            let html = '<div class="species-table-head"><span>Fischart</span><span>Fänge (antippen = Fotos)</span></div>';
 
             allSpecies.forEach(species => {
                 const speciesCatches = catches
                     .filter(c => c.fishType === species)
                     .sort((a, b) => b.length - a.length);
-                const minSize = fishSpecies[species] || 0;
                 const isEmpty = speciesCatches.length === 0;
                 const star = isBonus(species) ? '⭐ ' : '';
                 const isCustom = !fishSpecies.hasOwnProperty(species);
@@ -1289,7 +1336,6 @@
                 html += `<div class="species-row ${isEmpty ? 'empty' : ''}">
                     <div class="species-head">
                         <span class="species-name">${star}${species}${isCustom ? ' ✏️' : ''}</span>
-                        <span class="species-min">${minLabel(minSize)}</span>
                     </div>`;
 
                 if (!isEmpty) {
@@ -1298,11 +1344,12 @@
                         const isBest = i === 0;
                         const mine = me && c.angler === me;
                         const dateStr = c.photoDate || c.date || '';
-                        const safeInfo = `${c.angler} – ${c.fishType} ${c.length} cm`.replace(/'/g, '');
-                        html += `<div class="catch-chip ${isBest ? 'best' : ''}" onclick="showPhotoModal('${c.photo}', '${safeInfo}')">
+                        const nPhotos = photosOf(c).length;
+                        const fotoBadge = nPhotos > 1 ? `📷×${nPhotos}` : '📷';
+                        html += `<div class="catch-chip ${isBest ? 'best' : ''}" onclick="openGallery('${c.id}')">
                             <span class="chip-angler">${isBest ? '👑 ' : ''}${c.angler}</span>
                             <span class="chip-len">${c.length} cm</span>
-                            <span class="chip-date">📷 ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
+                            <span class="chip-date">${fotoBadge} ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
                             ${mine ? `<button class="chip-del" onclick="event.stopPropagation(); deleteCatch('${c.id}')">🗑️</button>` : ''}
                         </div>`;
                     });
@@ -1384,15 +1431,16 @@
             container.innerHTML = sorted.map(([species, r]) => {
                 const star = isBonus(species) ? '⭐ ' : '';
                 return r.holders.map((c, i) => {
-                    const safeInfo = `${c.angler} – ${species} ${c.length} cm`.replace(/'/g, '');
                     const dateStr = c.photoDate || c.date || '';
+                    const nPhotos = photosOf(c).length;
+                    const fotoBadge = nPhotos > 1 ? `📷×${nPhotos}` : '📷';
                     return `<div class="rekord-row">
-                        <img src="${c.photo}" class="rekord-thumb" loading="lazy" onclick="showPhotoModal('${c.photo}', '${safeInfo}')" alt="${species}">
+                        <img src="${c.photo}" class="rekord-thumb" loading="lazy" onclick="openGallery('${c.id}')" alt="${species}">
                         <div class="rekord-info">
                             <div class="rekord-art">${star}${species}${r.holders.length > 1 ? ' (geteilt)' : ''}</div>
-                            <div class="rekord-halter">👑 ${c.angler} · 📷 ${dateStr}${c.weight ? ' · ' + c.weight + ' kg' : ''}</div>
+                            <div class="rekord-halter">👑 ${c.angler} · ${fotoBadge} ${dateStr}${c.weight ? ' · ' + c.weight + ' kg' : ''}</div>
                         </div>
-                        <span class="rekord-cm" onclick="showPhotoModal('${c.photo}', '${safeInfo}')">${c.length} cm</span>
+                        <span class="rekord-cm" onclick="openGallery('${c.id}')">${c.length} cm</span>
                     </div>`;
                 }).join('');
             }).join('');
@@ -1413,11 +1461,39 @@
             }).join('');
         }
 
-        // ===== FOTO-MODAL =====
-        function showPhotoModal(photoSrc, info) {
-            document.getElementById('modalPhoto').src = photoSrc;
-            document.getElementById('modalInfo').textContent = info;
+        // ===== FOTO-GALERIE (mehrere Fotos pro Fang durchblättern) =====
+        let galleryPhotos = [];
+        let galleryIndex = 0;
+        let galleryInfo = '';
+
+        function photosOf(c) {
+            return (c.photos && c.photos.length) ? c.photos : [c.photo];
+        }
+
+        function openGallery(catchId) {
+            const c = catches.find(x => String(x.id) === String(catchId));
+            if (!c) return;
+            galleryPhotos = photosOf(c);
+            galleryIndex = 0;
+            galleryInfo = `${c.angler} – ${c.fishType} ${c.length} cm`;
+            renderGallery();
             document.getElementById('photoModal').classList.add('active');
+        }
+
+        function renderGallery() {
+            document.getElementById('modalPhoto').src = galleryPhotos[galleryIndex];
+            const counter = galleryPhotos.length > 1 ? ` · Foto ${galleryIndex + 1}/${galleryPhotos.length}` : '';
+            const tag = galleryIndex === 0 ? ' 📏' : ' 📸';
+            document.getElementById('modalInfo').textContent = galleryInfo + counter + (galleryPhotos.length > 1 ? tag : '');
+            const multi = galleryPhotos.length > 1;
+            document.getElementById('galleryPrev').classList.toggle('visible', multi);
+            document.getElementById('galleryNext').classList.toggle('visible', multi);
+        }
+
+        function galleryStep(dir) {
+            event.stopPropagation();
+            galleryIndex = (galleryIndex + dir + galleryPhotos.length) % galleryPhotos.length;
+            renderGallery();
         }
 
         function closePhotoModal() {

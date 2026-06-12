@@ -87,23 +87,39 @@ function readPhotoDate(filePath) {
   return null;
 }
 
-// API: Fang eintragen (Foto Pflicht)
-app.post('/api/catches', upload.single('photo'), (req, res) => {
-  const { angler, fishType, length, weight, notes, deviceId } = req.body;
+// API: Fang eintragen (Messfoto Pflicht + optionale weitere Fangfotos)
+const catchUpload = upload.fields([
+  { name: 'photo', maxCount: 1 },
+  { name: 'extraPhotos', maxCount: 5 }
+]);
 
-  if (!angler || !fishType || !length || !req.file) {
-    return res.status(400).json({ error: 'Fehlende Daten (Angler, Fischart, Länge und Foto sind Pflicht)' });
+app.post('/api/catches', catchUpload, (req, res) => {
+  const { angler, fishType, length, weight, notes, deviceId } = req.body;
+  const mainPhoto = req.files && req.files.photo && req.files.photo[0];
+  const extraPhotos = (req.files && req.files.extraPhotos) || [];
+  const allFiles = [mainPhoto, ...extraPhotos].filter(Boolean);
+
+  function cleanupFiles() {
+    allFiles.forEach(f => {
+      try { fs.unlinkSync(path.join(uploadsDir, f.filename)); } catch (e) { }
+    });
+  }
+
+  if (!angler || !fishType || !length || !mainPhoto) {
+    cleanupFiles();
+    return res.status(400).json({ error: 'Fehlende Daten (Angler, Fischart, Länge und Messfoto sind Pflicht)' });
   }
 
   // Regel 4: Mindestmaß serverseitig prüfen — untermaßige Einträge ablehnen
   const minSize = MIN_SIZES[fishType] || 0;
   if (parseInt(length, 10) < minSize) {
-    try { fs.unlinkSync(path.join(uploadsDir, req.file.filename)); } catch (e) { }
+    cleanupFiles();
     return res.status(400).json({ error: `Mindestmaß für ${fishType}: ${minSize} cm — Eintrag abgelehnt` });
   }
 
-  const photoPath = path.join(uploadsDir, req.file.filename);
+  const photoPath = path.join(uploadsDir, mainPhoto.filename);
   const photoDate = readPhotoDate(photoPath);
+  const photos = allFiles.map(f => `/uploads/${f.filename}`);
 
   const newCatch = {
     id: Date.now() + '-' + Math.random().toString(36).slice(2, 8),
@@ -112,7 +128,8 @@ app.post('/api/catches', upload.single('photo'), (req, res) => {
     length: parseInt(length, 10),
     weight: weight ? parseFloat(weight) : null,
     notes: (notes || '').trim(),
-    photo: `/uploads/${req.file.filename}`,
+    photo: photos[0],
+    photos: photos,
     date: new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }),
     photoDate: photoDate,
     createdAt: Date.now(),
@@ -142,10 +159,13 @@ app.delete('/api/catches/:id', (req, res) => {
     return res.status(403).json({ error: 'Du kannst nur deine eigenen Fänge löschen' });
   }
 
-  try {
-    const photoFile = path.join(uploadsDir, path.basename(catchToDelete.photo));
-    if (fs.existsSync(photoFile)) fs.unlinkSync(photoFile);
-  } catch (e) { /* Foto-Löschung optional */ }
+  const allPhotos = catchToDelete.photos && catchToDelete.photos.length ? catchToDelete.photos : [catchToDelete.photo];
+  allPhotos.forEach(p => {
+    try {
+      const photoFile = path.join(uploadsDir, path.basename(p));
+      if (fs.existsSync(photoFile)) fs.unlinkSync(photoFile);
+    } catch (e) { /* Foto-Löschung optional */ }
+  });
 
   catches = catches.filter(c => c.id !== req.params.id);
   saveData();
