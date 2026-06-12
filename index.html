@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#1a472a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Angel Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #1a472a;
+            --primary-light: #2d6e44;
+            --water: #0f3b5c;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --text: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #ecf0f1;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, var(--water) 0%, var(--primary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding-bottom: 90px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 14px 16px;
+            padding-top: max(14px, env(safe-area-inset-top));
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        header h1 {
+            font-size: 1.6em;
+            margin-bottom: 2px;
+        }
+
+        header p {
+            font-size: 0.8em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.92em;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: white;
+            color: var(--text);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232c3e50' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 18px;
+            padding-right: 42px;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(26, 71, 42, 0.1);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+
+        .file-input-label {
+            display: block;
+            padding: 14px;
+            background: white;
+            border: 2px dashed var(--primary);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--primary);
+            transition: all 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: rgba(26, 71, 42, 0.05);
+        }
+
+        .file-input-label.has-file {
+            border-style: solid;
+            background: rgba(39, 174, 96, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            padding: 12px;
+        }
+
+        @media (min-width: 700px) {
+            .grid {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card-header {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--primary);
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95em;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .stat-value.total {
+            color: var(--success);
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 12px;
+        }
+
+        thead {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: rgba(26, 71, 42, 0.05);
+        }
+
+        .photo-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 6px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .photo-thumb:active {
+            transform: scale(1.1);
+        }
+
+        button {
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+            min-height: 46px;
+        }
+
+        button:active {
+            opacity: 0.85;
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 6px 10px;
+            font-size: 0.85em;
+            min-height: auto;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            z-index: 200;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            color: var(--text-light);
+            font-size: 0.72em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-top: 3px solid transparent;
+            user-select: none;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            border-top-color: var(--primary);
+            background: rgba(26, 71, 42, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 1.6em;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .leaderboard {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 12px;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .leaderboard-item:last-child {
+            border-bottom: none;
+        }
+
+        .rank {
+            min-width: 40px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-right: 12px;
+            flex-shrink: 0;
+            font-size: 1.05em;
+        }
+
+        .rank.rank-1 { background: linear-gradient(135deg, #f1c40f 0%, #e67e22 100%); }
+        .rank.rank-2 { background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%); }
+        .rank.rank-3 { background: linear-gradient(135deg, #b87333 0%, #a0522d 100%); }
+
+        .leaderboard-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .leaderboard-name {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 3px;
+            font-size: 0.98em;
+        }
+
+        .leaderboard-stats {
+            font-size: 0.78em;
+            color: var(--text-light);
+        }
+
+        .leaderboard-score {
+            font-weight: 700;
+            font-size: 1.25em;
+            color: var(--primary);
+            min-width: 55px;
+            text-align: right;
+            margin-left: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 300;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+        }
+
+        .modal-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+            min-height: auto;
+            padding: 0;
+        }
+
+        .modal-info {
+            background: white;
+            color: var(--text);
+            padding: 16px;
+            border-radius: 0 0 12px 12px;
+            max-width: 90vw;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎣 Angel Challenge</h1>
+        <p>Wettbewerb Saison 2025/2026</p>
+    </header>
+
+    <div class="container">
+        <div id="dashboard" class="tab-content active">
+            <div class="grid" id="dashboardCards"></div>
+        </div>
+
+        <div id="eintrag" class="tab-content">
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">📝 Neuen Fang eintragen</div>
+                    <form id="catchForm">
+                        <div class="form-group">
+                            <label>Angler *</label>
+                            <select id="angler" required>
+                                <option value="">-- Angler wählen --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fischart *</label>
+                            <select id="fishType" required>
+                                <option value="">-- Fischart wählen --</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Länge (cm) – nur ganze Zahlen *</label>
+                            <input type="number" id="length" min="0" max="300" step="1" inputmode="numeric" placeholder="z.B. 35" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gewicht (kg) – optional</label>
+                            <input type="number" id="weight" min="0" max="200" step="0.1" inputmode="decimal" placeholder="z.B. 2.5">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Foto – PFLICHT *</label>
+                            <div class="file-input-wrapper">
+                                <input type="file" id="photo" accept="image/*" required onchange="updatePhotoLabel()">
+                                <label for="photo" class="file-input-label" id="photoLabel">📷 Foto auswählen oder hier ablegen</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notizen – optional</label>
+                            <textarea id="notes" rows="2" placeholder="Ort, Köder, Wetter..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; font-size: 1.05em;">✅ Fang speichern</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="tabelle" class="tab-content">
+            <table id="catchesTable">
+                <thead>
+                    <tr>
+                        <th>Angler</th>
+                        <th>Fischart</th>
+                        <th>Maß (cm)</th>
+                        <th>Gewicht</th>
+                        <th>Foto</th>
+                        <th>Aktion</th>
+                    </tr>
+                </thead>
+                <tbody id="catchesBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="ranking" class="tab-content">
+            <div id="leaderboardContainer"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="modal" id="photoModal">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closePhotoModal()">✕</button>
+            <img id="modalPhoto" class="modal-img" src="" alt="Fangfoto">
+            <div class="modal-info" id="modalInfo"></div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('dashboard', this)">
+            <span class="nav-icon">📊</span>
+            <span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('eintrag', this)">
+            <span class="nav-icon">📝</span>
+            <span>Eintrag</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('tabelle', this)">
+            <span class="nav-icon">📋</span>
+            <span>Tabelle</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('ranking', this)">
+            <span class="nav-icon">🏆</span>
+            <span>Ranking</span>
+        </div>
+    </div>
+
+    <script>
+        const anglers = ['Christoph', 'Dumbo', 'Fischi', 'Flipper', 'Flo', 'Jerry', 'Justin', 'Kevin', 'Mandau', 'Marc', 'Yannick'];
+
+        const fishSpecies = {
+            'Aal': 50, 'Äsche': 35, 'Bachforelle': 30, 'Bachsaibling': 25, 'Barbe': 40,
+            'Barsch': 25, 'Brasse': 35, 'Döbel': 30, 'Dorsch': 35, 'Flunder': 30,
+            'Graskarpfen': 60, 'Grundel': 0, 'Gründling': 0, 'Güster': 25, 'Hecht': 50,
+            'Hering': 27, 'Hornhecht': 50, 'Karpfen': 60, 'Kliesche': 27, 'Köhler': 35,
+            'Lachs': 60, 'Makrele': 35, 'Meerforelle': 50, 'Pollack': 30, 'Quappe': 40,
+            'Rapfen': 40, 'Reg.-Forelle': 35, 'Rotauge': 20, 'Rotfeder': 25, 'Scholle': 27,
+            'Schleie': 35, 'Steinbutt': 35, 'Stint': 12, 'Ukelei': 15, 'Wels': 70,
+            'Wittling': 27, 'Wolfsbarsch': 42, 'Zander': 45, 'Forelle': 35
+        };
+
+        let catches = [];
+        let toastTimer = null;
+
+        function showToast(msg, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show ' + type;
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        function updatePhotoLabel() {
+            const input = document.getElementById('photo');
+            const label = document.getElementById('photoLabel');
+            if (input.files.length > 0) {
+                label.textContent = `✅ ${input.files[0].name}`;
+                label.classList.add('has-file');
+            } else {
+                label.textContent = '📷 Foto auswählen oder hier ablegen';
+                label.classList.remove('has-file');
+            }
+        }
+
+        function populateSelects() {
+            const anglerSelect = document.getElementById('angler');
+            const fishSelect = document.getElementById('fishType');
+
+            anglers.forEach(a => {
+                anglerSelect.appendChild(new Option(a, a));
+            });
+
+            Object.keys(fishSpecies).sort((a, b) => a.localeCompare(b, 'de')).forEach(fish => {
+                const label = fish + (fishSpecies[fish] > 0 ? ` (${fishSpecies[fish]} cm)` : '');
+                fishSelect.appendChild(new Option(label, fish));
+            });
+
+            const lastAngler = localStorage.getItem('angelChallengeMe');
+            if (lastAngler && anglers.includes(lastAngler)) {
+                anglerSelect.value = lastAngler;
+            }
+        }
+
+        function switchTab(tabName, navEl) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            navEl.classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        document.getElementById('catchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const angler = document.getElementById('angler').value;
+            const fishType = document.getElementById('fishType').value;
+            const length = parseInt(document.getElementById('length').value);
+            const photo = document.getElementById('photo').files[0];
+            const minSize = fishSpecies[fishType] || 0;
+
+            if (!photo) {
+                showToast('❌ Foto erforderlich!', 'error');
+                return;
+            }
+
+            if (isNaN(length) || length <= 0) {
+                showToast('❌ Gültige Länge eingeben!', 'error');
+                return;
+            }
+
+            if (length < minSize) {
+                showToast(`❌ Mindestmaß ${fishType}: ${minSize} cm!`, 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('angler', angler);
+            formData.append('fishType', fishType);
+            formData.append('length', length);
+            formData.append('weight', document.getElementById('weight').value);
+            formData.append('notes', document.getElementById('notes').value);
+            formData.append('photo', photo);
+
+            try {
+                const res = await fetch('/api/catches', { method: 'POST', body: formData });
+                if (!res.ok) throw new Error('Upload fehlgeschlagen');
+
+                localStorage.setItem('angelChallengeMe', angler);
+                showToast(`✅ ${fishType} (${length} cm) gespeichert!`);
+                document.getElementById('catchForm').reset();
+                updatePhotoLabel();
+                loadCatches();
+            } catch (e) {
+                showToast('❌ Fehler beim Speichern', 'error');
+            }
+        });
+
+        function calculatePoints(angler) {
+            const anglerCatches = catches.filter(c => c.angler === angler);
+            if (anglerCatches.length === 0) {
+                return { totalLength: 0, lengthPoints: 0, speciesPoints: 0, biggestFishBonus: 0, totalPoints: 0, count: 0, species: 0 };
+            }
+
+            const totalLength = anglerCatches.reduce((sum, c) => sum + c.length, 0);
+            const uniqueSpecies = new Set(anglerCatches.map(c => c.fishType)).size;
+            const lengthPoints = Math.floor(totalLength / 10) * 5;
+            const speciesPoints = uniqueSpecies * 10;
+            const biggestFishBonus = uniqueSpecies * 10;
+            const totalPoints = lengthPoints + speciesPoints + biggestFishBonus;
+
+            return {
+                totalLength,
+                lengthPoints,
+                speciesPoints,
+                biggestFishBonus,
+                totalPoints,
+                count: anglerCatches.length,
+                species: uniqueSpecies
+            };
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('dashboardCards');
+            container.innerHTML = '';
+
+            const sorted = anglers.map(a => ({ angler: a, points: calculatePoints(a) }))
+                .sort((a, b) => b.points.totalPoints - a.points.totalPoints);
+
+            sorted.forEach(({ angler, points }) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-header">${angler}</div>
+                    <div class="stat-row"><span class="stat-label">Gesamtlänge:</span><span class="stat-value">${points.totalLength} cm</span></div>
+                    <div class="stat-row"><span class="stat-label">Fischarten:</span><span class="stat-value">${points.species}</span></div>
+                    <div class="stat-row"><span class="stat-label">Fänge:</span><span class="stat-value">${points.count}</span></div>
+                    <div class="stat-row" style="margin-top:8px;border-top:2px solid var(--border);padding-top:8px;"><span class="stat-label">Punkte (cm):</span><span class="stat-value">${points.lengthPoints}</span></div>
+                    <div class="stat-row"><span class="stat-label">Punkte (Arten):</span><span class="stat-value">${points.speciesPoints}</span></div>
+                    <div class="stat-row"><span class="stat-label">Bonus größter Fisch:</span><span class="stat-value">${points.biggestFishBonus}</span></div>
+                    <div class="stat-row" style="font-size:1.05em;font-weight:700;border-top:2px solid var(--primary);padding-top:8px;margin-top:8px;"><span class="stat-label">GESAMT:</span><span class="stat-value total">${points.totalPoints} Pkt</span></div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderTable() {
+            const body = document.getElementById('catchesBody');
+            body.innerHTML = '';
+
+            const sorted = [...catches].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            sorted.forEach(c => {
+                const row = body.insertRow();
+                const photoDateStr = c.photoDate ? `<div style="font-size:0.8em; color:var(--text-light);">📷 ${c.photoDate}</div>` : '';
+                row.innerHTML = `
+                    <td>${c.angler}</td>
+                    <td>${c.fishType}</td>
+                    <td><span style="cursor:pointer; color:var(--primary); font-weight:700;" onclick="showPhotoModal('${c.photo}', '${c.angler} - ${c.fishType} ${c.length}cm')">${c.length} cm</span>${photoDateStr}</td>
+                    <td>${c.weight ? c.weight + ' kg' : '-'}</td>
+                    <td><img src="${c.photo}" class="photo-thumb" onclick="showPhotoModal('${c.photo}', '${c.angler} - ${c.fishType} ${c.length}cm')"></td>
+                    <td><button class="btn-danger" onclick="deleteCatch('${c.id}')">🗑️</button></td>
+                `;
+            });
+        }
+
+        function renderLeaderboard() {
+            const rankings = anglers.map(angler => ({ angler, points: calculatePoints(angler) }))
+                .sort((a, b) => b.points.totalPoints - a.points.totalPoints);
+
+            const container = document.getElementById('leaderboardContainer');
+            let html = '<div class="leaderboard">';
+            rankings.forEach((item, index) => {
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const medal = index === 0 ? '🥇 ' : index === 1 ? '🥈 ' : index === 2 ? '🥉 ' : '';
+                html += `
+                    <div class="leaderboard-item">
+                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="leaderboard-info">
+                            <div class="leaderboard-name">${medal}${item.angler}</div>
+                            <div class="leaderboard-stats">${item.points.count} Fänge · ${item.points.species} Arten · ${item.points.totalLength} cm</div>
+                        </div>
+                        <div class="leaderboard-score">${item.points.totalPoints}</div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function showPhotoModal(photoSrc, info) {
+            document.getElementById('modalPhoto').src = photoSrc;
+            document.getElementById('modalInfo').textContent = info;
+            document.getElementById('photoModal').classList.add('active');
+        }
+
+        function closePhotoModal() {
+            document.getElementById('photoModal').classList.remove('active');
+        }
+
+        document.getElementById('photoModal').addEventListener('click', closePhotoModal);
+
+        async function deleteCatch(id) {
+            if (!confirm('Fang löschen?')) return;
+            try {
+                const res = await fetch(`/api/catches/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+                showToast('🗑️ Fang gelöscht');
+                loadCatches();
+            } catch (e) {
+                showToast('❌ Fehler beim Löschen', 'error');
+            }
+        }
+
+        async function loadCatches() {
+            try {
+                const res = await fetch('/api/catches');
+                catches = await res.json();
+                renderDashboard();
+                renderTable();
+                renderLeaderboard();
+            } catch (e) {
+                console.error('Fehler beim Laden:', e);
+            }
+        }
+
+        populateSelects();
+        loadCatches();
+        setInterval(loadCatches, 5000); // Alle 5 Sekunden aktualisieren
+    </script>
+</body>
+</html>
