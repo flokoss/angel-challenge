@@ -28,7 +28,10 @@ try {
 
 function saveData() {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(catches, null, 2));
+    // Atomar schreiben: erst temp-Datei, dann umbenennen — data.json kann nie halb geschrieben sein
+    const tmp = DATA_FILE + '.tmp';
+    fs.writeFileSync(tmp, JSON.stringify(catches, null, 2));
+    fs.renameSync(tmp, DATA_FILE);
   } catch (e) {
     console.error('Konnte data.json nicht speichern:', e.message);
   }
