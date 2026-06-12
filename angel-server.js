@@ -59,6 +59,18 @@ app.use(express.json());
 app.use('/uploads', express.static(uploadsDir));
 app.use(express.static(__dirname, { index: 'index.html' }));
 
+// Mindestmaße (exakt aus dem Original-Sheet, 0 = "keins")
+const MIN_SIZES = {
+  'Aal': 50, 'Äsche': 35, 'Bachforelle': 30, 'Bachsaibling': 30, 'Barbe': 0,
+  'Barsch': 20, 'Brasse': 20, 'Döbel': 20, 'Dorsch': 38, 'Flunder': 20,
+  'Graskarpfen': 60, 'Grundel': 0, 'Gründling': 0, 'Güster': 20, 'Hecht': 50,
+  'Hering': 0, 'Hornhecht': 0, 'Karpfen': 35, 'Kliesche': 0, 'Köhler (Seelachs)': 0,
+  'Lachs': 60, 'Makrele': 0, 'Meerforelle': 40, 'Pollack': 0, 'Quappe': 0,
+  'Rapfen': 50, 'Reg.-Forelle': 30, 'Rotauge': 20, 'Rotfeder': 20, 'Scholle': 25,
+  'Schleie': 25, 'Steinbutt': 30, 'Stint': 0, 'Ukelei': 0, 'Wels': 70,
+  'Wittling': 23, 'Wolfsbarsch': 42, 'Zander': 45
+};
+
 // EXIF-Aufnahmedatum auslesen
 function readPhotoDate(filePath) {
   try {
@@ -77,10 +89,17 @@ function readPhotoDate(filePath) {
 
 // API: Fang eintragen (Foto Pflicht)
 app.post('/api/catches', upload.single('photo'), (req, res) => {
-  const { angler, fishType, length, weight, notes } = req.body;
+  const { angler, fishType, length, weight, notes, deviceId } = req.body;
 
   if (!angler || !fishType || !length || !req.file) {
     return res.status(400).json({ error: 'Fehlende Daten (Angler, Fischart, Länge und Foto sind Pflicht)' });
+  }
+
+  // Regel 4: Mindestmaß serverseitig prüfen — untermaßige Einträge ablehnen
+  const minSize = MIN_SIZES[fishType] || 0;
+  if (parseInt(length, 10) < minSize) {
+    try { fs.unlinkSync(path.join(uploadsDir, req.file.filename)); } catch (e) { }
+    return res.status(400).json({ error: `Mindestmaß für ${fishType}: ${minSize} cm — Eintrag abgelehnt` });
   }
 
   const photoPath = path.join(uploadsDir, req.file.filename);
@@ -96,24 +115,31 @@ app.post('/api/catches', upload.single('photo'), (req, res) => {
     photo: `/uploads/${req.file.filename}`,
     date: new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }),
     photoDate: photoDate,
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    deviceId: deviceId || null
   };
 
   catches.push(newCatch);
   saveData();
-  res.json(newCatch);
+  const { deviceId: _d, ...publicCatch } = newCatch;
+  res.json(publicCatch);
 });
 
-// API: Alle Fänge
+// API: Alle Fänge (ohne deviceId — die bleibt geheim)
 app.get('/api/catches', (req, res) => {
-  res.json(catches);
+  res.json(catches.map(({ deviceId, ...c }) => c));
 });
 
-// API: Fang löschen
+// API: Fang löschen — nur vom eigenen Gerät
 app.delete('/api/catches/:id', (req, res) => {
   const catchToDelete = catches.find(c => c.id === req.params.id);
   if (!catchToDelete) {
     return res.status(404).json({ error: 'Nicht gefunden' });
+  }
+
+  const requesterDevice = req.query.deviceId || '';
+  if (catchToDelete.deviceId && catchToDelete.deviceId !== requesterDevice) {
+    return res.status(403).json({ error: 'Du kannst nur deine eigenen Fänge löschen' });
   }
 
   try {

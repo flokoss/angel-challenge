@@ -6,7 +6,10 @@
     <meta name="theme-color" content="#1a472a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Angel Challenge">
     <title>Angel Challenge</title>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20180%20180'%3E%3Crect%20fill='%231a472a'%20width='180'%20height='180'/%3E%3Ctext%20x='90'%20y='115'%20font-size='80'%20text-anchor='middle'%3E%F0%9F%8E%A3%3C/text%3E%3C/svg%3E">
     <style>
         * {
             margin: 0;
@@ -20,6 +23,7 @@
             --primary-light: #2d6e44;
             --water: #0f3b5c;
             --success: #27ae60;
+            --gold: #f1c40f;
             --danger: #e74c3c;
             --text: #2c3e50;
             --text-light: #7f8c8d;
@@ -49,6 +53,7 @@
         header h1 {
             font-size: 1.6em;
             margin-bottom: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         header p {
@@ -67,6 +72,12 @@
 
         .tab-content.active {
             display: block;
+            animation: fadeIn 0.25s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .form-group {
@@ -109,11 +120,10 @@
             box-shadow: 0 0 0 4px rgba(26, 71, 42, 0.1);
         }
 
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
+        .hint {
+            font-size: 0.78em;
+            color: var(--text-light);
+            margin-top: 5px;
         }
 
         .file-input-wrapper input[type=file] {
@@ -131,11 +141,6 @@
             cursor: pointer;
             font-weight: 600;
             color: var(--primary);
-            transition: all 0.3s;
-        }
-
-        .file-input-label:hover {
-            background: rgba(26, 71, 42, 0.05);
         }
 
         .file-input-label.has-file {
@@ -165,6 +170,10 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             border-top: 4px solid var(--primary);
         }
+
+        .card.top-1 { border-top: 4px solid var(--gold); box-shadow: 0 2px 14px rgba(241, 196, 15, 0.35); }
+        .card.top-2 { border-top: 4px solid #95a5a6; }
+        .card.top-3 { border-top: 4px solid #b87333; }
 
         .card-header {
             font-weight: 700;
@@ -202,9 +211,35 @@
             font-size: 1.2em;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* ===== Fangbuch (Aufbau wie das Original-Sheet) ===== */
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 12px 0 12px;
+        }
+
+        .table-toolbar label {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            font-weight: 700;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .table-toolbar select {
+            flex: 1;
+        }
+
+        .sheet-title {
+            color: white;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            font-weight: 700;
+            font-size: 1.05em;
+            padding: 14px 14px 0 14px;
+        }
+
+        .species-table {
             background: white;
             border-radius: 12px;
             overflow: hidden;
@@ -212,138 +247,192 @@
             margin: 12px;
         }
 
-        thead {
+        .species-table-head {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.88em;
         }
 
-        th {
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-
-        td {
-            padding: 12px;
+        .species-row {
             border-bottom: 1px solid var(--border);
+            padding: 9px 14px;
         }
 
-        tr:last-child td {
+        .species-row:last-child {
             border-bottom: none;
         }
 
-        tbody tr:hover {
-            background: rgba(26, 71, 42, 0.05);
+        .species-row.empty {
+            padding: 6px 14px;
+            background: #fafbfc;
         }
 
-        .photo-thumb {
-            width: 50px;
-            height: 50px;
-            border-radius: 6px;
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.2s;
+        .species-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
         }
 
-        .photo-thumb:active {
-            transform: scale(1.1);
+        .species-name {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.93em;
         }
 
-        button {
-            padding: 13px 20px;
-            border: none;
-            border-radius: 8px;
+        .species-row.empty .species-name {
+            color: #b8c2c8;
             font-weight: 600;
+        }
+
+        .species-min {
+            font-size: 0.72em;
+            color: var(--text-light);
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 10px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .species-row.empty .species-min {
+            background: transparent;
+            color: #c8d0d5;
+        }
+
+        .species-catches {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .catch-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(26, 71, 42, 0.06);
+            border-left: 3px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 10px;
             cursor: pointer;
-            transition: all 0.2s;
-            font-size: 1em;
-            min-height: 46px;
+            min-height: 40px;
         }
 
-        button:active {
-            opacity: 0.85;
-            transform: scale(0.97);
+        .catch-chip:active {
+            background: rgba(26, 71, 42, 0.12);
         }
 
-        .btn-primary {
+        .catch-chip.best {
+            background: rgba(241, 196, 15, 0.12);
+            border-left-color: var(--gold);
+        }
+
+        .chip-angler {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.88em;
+            flex-shrink: 0;
+        }
+
+        .chip-len {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.95em;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+            flex-shrink: 0;
+        }
+
+        .chip-date {
+            font-size: 0.7em;
+            color: var(--text-light);
+            margin-left: auto;
+            text-align: right;
+            line-height: 1.3;
+        }
+
+        .chip-del {
+            background: none;
+            border: none;
+            font-size: 1.05em;
+            padding: 4px 6px;
+            min-height: auto;
+            flex-shrink: 0;
+            opacity: 0.75;
+            cursor: pointer;
+        }
+
+        /* Auswertung unter dem Fangbuch (wie im Sheet) */
+        .auswertung {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 12px;
+        }
+
+        .auswertung-head {
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             color: white;
+            padding: 12px 14px;
+            font-weight: 700;
+            font-size: 0.95em;
         }
 
-        .btn-danger {
-            background: var(--danger);
-            color: white;
-            padding: 6px 10px;
-            font-size: 0.85em;
-            min-height: auto;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 110px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--text);
-            color: white;
-            padding: 12px 22px;
-            border-radius: 30px;
-            font-size: 0.9em;
-            font-weight: 600;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s;
-            z-index: 200;
-            white-space: nowrap;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-        }
-
-        .toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.success { background: var(--success); }
-        .toast.error { background: var(--danger); }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid var(--border);
+        .aus-row {
             display: flex;
-            justify-content: space-around;
-            padding: 6px 0 max(6px, env(safe-area-inset-bottom));
-            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
-            z-index: 100;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9em;
         }
 
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px 4px;
-            color: var(--text-light);
-            font-size: 0.72em;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-top: 3px solid transparent;
-            user-select: none;
+        .aus-row:last-child {
+            border-bottom: none;
         }
 
-        .nav-item.active {
+        .aus-row.top3 {
+            background: rgba(26, 71, 42, 0.08);
+            font-weight: 700;
+        }
+
+        .aus-row.top3 .aus-name {
             color: var(--primary);
-            border-top-color: var(--primary);
-            background: rgba(26, 71, 42, 0.05);
         }
 
-        .nav-icon {
-            font-size: 1.6em;
-            margin-bottom: 2px;
-            display: block;
+        .aus-platz {
+            min-width: 70px;
+            font-weight: 700;
+            flex-shrink: 0;
         }
 
+        .aus-name {
+            flex: 1;
+            font-weight: 600;
+        }
+
+        .aus-cm {
+            color: var(--text-light);
+            font-size: 0.85em;
+            flex-shrink: 0;
+        }
+
+        .aus-punkte {
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 55px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Leaderboard */
         .leaderboard {
             background: white;
             border-radius: 12px;
@@ -409,6 +498,202 @@
             margin-left: 10px;
         }
 
+        /* Rekorde-Tab: größter Fisch pro Art */
+        .rekord-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .rekord-row:last-child {
+            border-bottom: none;
+        }
+
+        .rekord-thumb {
+            width: 46px;
+            height: 46px;
+            border-radius: 8px;
+            object-fit: cover;
+            flex-shrink: 0;
+            cursor: pointer;
+            border: 2px solid var(--gold);
+        }
+
+        .rekord-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rekord-art {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.92em;
+        }
+
+        .rekord-halter {
+            font-size: 0.78em;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .rekord-cm {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--primary);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 8px 4px;
+        }
+
+        .rekord-leer {
+            padding: 30px 20px;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.9em;
+        }
+
+        /* Info-Tab: Regeln + Fangkalender */
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin: 12px;
+            overflow: hidden;
+        }
+
+        .info-card-head {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 12px 14px;
+            font-weight: 700;
+        }
+
+        .regel-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 14px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88em;
+            line-height: 1.45;
+        }
+
+        .regel-item:last-child {
+            border-bottom: none;
+        }
+
+        .regel-nr {
+            font-weight: 700;
+            color: var(--primary);
+            flex-shrink: 0;
+            min-width: 22px;
+        }
+
+        details.monat {
+            border-bottom: 1px solid var(--border);
+        }
+
+        details.monat:last-child {
+            border-bottom: none;
+        }
+
+        details.monat summary {
+            padding: 12px 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.92em;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        details.monat summary::after {
+            content: '▾';
+            color: var(--text-light);
+        }
+
+        details.monat[open] summary::after {
+            content: '▴';
+        }
+
+        details.monat.aktuell summary {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--primary);
+        }
+
+        .monat-arten {
+            padding: 0 14px 12px 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .art-tag {
+            background: rgba(26, 71, 42, 0.07);
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 0.78em;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* Buttons */
+        button {
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1em;
+            min-height: 46px;
+        }
+
+        button:active {
+            opacity: 0.85;
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 110px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s;
+            z-index: 200;
+            white-space: nowrap;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success { background: var(--success); }
+        .toast.error { background: var(--danger); }
+
+        /* Foto-Modal */
         .modal {
             display: none;
             position: fixed;
@@ -429,15 +714,17 @@
 
         .modal-content {
             position: relative;
-            max-width: 90vw;
-            max-height: 90vh;
+            max-width: 92vw;
+            max-height: 88vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .modal-img {
-            width: 100%;
-            height: 100%;
+            max-width: 92vw;
+            max-height: 75vh;
             object-fit: contain;
-            border-radius: 12px;
+            border-radius: 12px 12px 0 0;
         }
 
         .modal-close {
@@ -450,33 +737,91 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            font-size: 1.5em;
-            cursor: pointer;
+            font-size: 1.4em;
             min-height: auto;
             padding: 0;
+            z-index: 10;
         }
 
         .modal-info {
             background: white;
             color: var(--text);
-            padding: 16px;
+            padding: 14px;
             border-radius: 0 0 12px 12px;
-            max-width: 90vw;
             text-align: center;
+            font-weight: 700;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+            box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 2px;
+            color: var(--text-light);
+            font-size: 0.68em;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-top: 3px solid transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            border-top-color: var(--primary);
+            background: rgba(26, 71, 42, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 1.5em;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        .nav-label {
+            display: block;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 12px;
         }
     </style>
 </head>
 <body>
     <header>
         <h1>🎣 Angel Challenge</h1>
-        <p>Wettbewerb Saison 2025/2026</p>
+        <p>Angelchallenge 2026</p>
     </header>
 
     <div class="container">
+        <!-- DASHBOARD -->
         <div id="dashboard" class="tab-content active">
             <div class="grid" id="dashboardCards"></div>
         </div>
 
+        <!-- EINTRAG -->
         <div id="eintrag" class="tab-content">
             <div class="grid">
                 <div class="card">
@@ -494,11 +839,17 @@
                             <select id="fishType" required>
                                 <option value="">-- Fischart wählen --</option>
                             </select>
+                            <div class="hint">⭐ = Bonus-Art (zählt doppelt!) · Pro Art zählt dein größter Fang</div>
+                        </div>
+
+                        <div class="form-group" id="customFishGroup" style="display:none;">
+                            <label>Name der Fischart *</label>
+                            <input type="text" id="customFish" placeholder="z.B. Stör" maxlength="30">
                         </div>
 
                         <div class="form-group">
-                            <label>Länge (cm) – nur ganze Zahlen *</label>
-                            <input type="number" id="length" min="0" max="300" step="1" inputmode="numeric" placeholder="z.B. 35" required>
+                            <label>Länge (cm) – ganze Zahl *</label>
+                            <input type="number" id="length" min="1" max="300" step="1" inputmode="numeric" placeholder="z.B. 35" required>
                         </div>
 
                         <div class="form-group">
@@ -508,9 +859,9 @@
 
                         <div class="form-group">
                             <label>Foto – PFLICHT *</label>
-                            <div class="file-input-wrapper">
+                            <div class="file-input-wrapper" style="position:relative;">
                                 <input type="file" id="photo" accept="image/*" required onchange="updatePhotoLabel()">
-                                <label for="photo" class="file-input-label" id="photoLabel">📷 Foto auswählen oder hier ablegen</label>
+                                <label for="photo" class="file-input-label" id="photoLabel">📷 Foto auswählen</label>
                             </div>
                         </div>
 
@@ -519,31 +870,48 @@
                             <textarea id="notes" rows="2" placeholder="Ort, Köder, Wetter..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn-primary" style="width: 100%; padding: 16px; font-size: 1.05em;">✅ Fang speichern</button>
+                        <button type="submit" class="btn-primary" style="width:100%; padding:16px; font-size:1.05em;">✅ Fang speichern</button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <div id="tabelle" class="tab-content">
-            <table id="catchesTable">
-                <thead>
-                    <tr>
-                        <th>Angler</th>
-                        <th>Fischart</th>
-                        <th>Maß (cm)</th>
-                        <th>Gewicht</th>
-                        <th>Foto</th>
-                        <th>Aktion</th>
-                    </tr>
-                </thead>
-                <tbody id="catchesBody">
-                </tbody>
-            </table>
+        <!-- FANGBUCH (Aufbau wie das Original-Sheet) -->
+        <div id="fangbuch" class="tab-content">
+            <div class="table-toolbar">
+                <label>🙋 Ich bin:</label>
+                <select id="whoAmI" onchange="setMe(this.value)">
+                    <option value="">-- wählen --</option>
+                </select>
+            </div>
+            <div class="sheet-title">Länge der Fänge in CM</div>
+            <div class="species-table" id="speciesTableContainer"></div>
+            <div class="auswertung" id="auswertungContainer"></div>
         </div>
 
+        <!-- RANKING -->
         <div id="ranking" class="tab-content">
             <div id="leaderboardContainer"></div>
+        </div>
+
+        <!-- REKORDE: größter Fisch pro Art -->
+        <div id="rekorde" class="tab-content">
+            <div class="info-card">
+                <div class="info-card-head">👑 Größter Fisch pro Art</div>
+                <div id="rekordeContainer"></div>
+            </div>
+        </div>
+
+        <!-- INFO: Regeln + Fangkalender -->
+        <div id="info" class="tab-content">
+            <div class="info-card">
+                <div class="info-card-head">📜 Regeln</div>
+                <div id="regelnContainer"></div>
+            </div>
+            <div class="info-card">
+                <div class="info-card-head">📅 Fangkalender – wann beißt was?</div>
+                <div id="kalenderContainer"></div>
+            </div>
         </div>
     </div>
 
@@ -560,75 +928,142 @@
     <div class="bottom-nav">
         <div class="nav-item active" onclick="switchTab('dashboard', this)">
             <span class="nav-icon">📊</span>
-            <span>Dashboard</span>
+            <span class="nav-label">Dashboard</span>
         </div>
         <div class="nav-item" onclick="switchTab('eintrag', this)">
             <span class="nav-icon">📝</span>
-            <span>Eintrag</span>
+            <span class="nav-label">Eintrag</span>
         </div>
-        <div class="nav-item" onclick="switchTab('tabelle', this)">
+        <div class="nav-item" onclick="switchTab('fangbuch', this)">
             <span class="nav-icon">📋</span>
-            <span>Tabelle</span>
+            <span class="nav-label">Fangbuch</span>
         </div>
         <div class="nav-item" onclick="switchTab('ranking', this)">
             <span class="nav-icon">🏆</span>
-            <span>Ranking</span>
+            <span class="nav-label">Ranking</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('rekorde', this)">
+            <span class="nav-icon">👑</span>
+            <span class="nav-label">Rekorde</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('info', this)">
+            <span class="nav-icon">ℹ️</span>
+            <span class="nav-label">Info</span>
         </div>
     </div>
 
     <script>
+        // ===== STAMMDATEN (exakt aus dem Original-Sheet "Angelchallenge 2026") =====
         const anglers = ['Christoph', 'Dumbo', 'Fischi', 'Flipper', 'Flo', 'Jerry', 'Justin', 'Kevin', 'Mandau', 'Marc', 'Yannick'];
 
+        // Mindestmaße: 0 = "keins"
         const fishSpecies = {
-            'Aal': 50, 'Äsche': 35, 'Bachforelle': 30, 'Bachsaibling': 25, 'Barbe': 40,
-            'Barsch': 25, 'Brasse': 35, 'Döbel': 30, 'Dorsch': 35, 'Flunder': 30,
-            'Graskarpfen': 60, 'Grundel': 0, 'Gründling': 0, 'Güster': 25, 'Hecht': 50,
-            'Hering': 27, 'Hornhecht': 50, 'Karpfen': 60, 'Kliesche': 27, 'Köhler': 35,
-            'Lachs': 60, 'Makrele': 35, 'Meerforelle': 50, 'Pollack': 30, 'Quappe': 40,
-            'Rapfen': 40, 'Reg.-Forelle': 35, 'Rotauge': 20, 'Rotfeder': 25, 'Scholle': 27,
-            'Schleie': 35, 'Steinbutt': 35, 'Stint': 12, 'Ukelei': 15, 'Wels': 70,
-            'Wittling': 27, 'Wolfsbarsch': 42, 'Zander': 45, 'Forelle': 35
+            'Aal': 50, 'Äsche': 35, 'Bachforelle': 30, 'Bachsaibling': 30, 'Barbe': 0,
+            'Barsch': 20, 'Brasse': 20, 'Döbel': 20, 'Dorsch': 38, 'Flunder': 20,
+            'Graskarpfen': 60, 'Grundel': 0, 'Gründling': 0, 'Güster': 20, 'Hecht': 50,
+            'Hering': 0, 'Hornhecht': 0, 'Karpfen': 35, 'Kliesche': 0, 'Köhler (Seelachs)': 0,
+            'Lachs': 60, 'Makrele': 0, 'Meerforelle': 40, 'Pollack': 0, 'Quappe': 0,
+            'Rapfen': 50, 'Reg.-Forelle': 30, 'Rotauge': 20, 'Rotfeder': 20, 'Scholle': 25,
+            'Schleie': 25, 'Steinbutt': 30, 'Stint': 0, 'Ukelei': 0, 'Wels': 70,
+            'Wittling': 23, 'Wolfsbarsch': 42, 'Zander': 45
         };
 
+        // Bonus-Arten: cm-Punkte und Art-Punkte zählen doppelt + 10er-Bonus für den Größten
+        const BONUS_SPECIES = ['Aal', 'Bachforelle', 'Lachs', 'Meerforelle', 'Zander'];
+
+        const REGELN = [
+            'Nur Fänge aus DE.',
+            'Es gibt 3 Punkte je maßige Fischart und zusätzlich 1 Punkt je 10 cm Fischlänge, ab 0 gemessen.',
+            'Auch Fänge innerhalb der Schonzeit mit Messen und Zurücksetzen zählen.',
+            'Mindestmaße müssen eingehalten werden. Steht beim Fisch „keins", gilt kein Limit. Untermaßige Einträge werden automatisch abgelehnt.',
+            '⭐ Bonus-Arten Aal, Bachforelle, Lachs, Meerforelle und Zander zählen doppelt: cm-Punkte und Art-Punkte werden verdoppelt.',
+            'Bonus „Größter Fisch": Pro Bonus-Art bekommt der Angler mit dem größten Fang zusätzlich 10 Punkte (max. 50). Bei Gleichstand bekommen alle den Bonus.',
+            'Geschützte Kleinfischarten wie Ukelei oder Gründling zählen wie Fische ohne Mindestmaß — jeder Fang zählt.',
+            'Letzter Platz heißt nicht „Platz 11", sondern „Schneider" 🤡. Bei Punktegleichstand am unteren Ende sind alle Betroffenen Schneider.',
+            'Die Top 3 werden in der Auswertung hervorgehoben.',
+            'Pro Fischart und Angler zählt EIN Fang. Wer mehrere Fische derselben Art fängt — es zählt automatisch der größte.'
+        ];
+
+        const FANGKALENDER = {
+            'Januar': ['Äsche','Barsch','Döbel','Grundel','Hecht','Meerforelle','Quappe','Rapfen','Rotauge','Zander'],
+            'Februar': ['Äsche','Barsch','Döbel','Grundel','Hecht','Meerforelle','Quappe','Rapfen','Rotauge','Rotfeder','Schleie','Zander'],
+            'März': ['Aal','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels'],
+            'April': ['Aal','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels'],
+            'Mai': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'Juni': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'Juli': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'August': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'September': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'Oktober': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'November': ['Äsche','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Quappe','Rapfen','Rotauge','Rotfeder','Schleie','Wels','Zander'],
+            'Dezember': ['Äsche','Barsch','Döbel','Hecht','Karpfen','Quappe','Rapfen','Rotauge','Zander']
+        };
+
+        // ===== STATE =====
         let catches = [];
         let toastTimer = null;
 
+        // Geräte-ID: nur eigene Fänge können gelöscht werden
+        let deviceId = localStorage.getItem('angelDeviceId');
+        if (!deviceId) {
+            deviceId = 'dev-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+            localStorage.setItem('angelDeviceId', deviceId);
+        }
+
+        // ===== HELPER =====
         function showToast(msg, type = 'success') {
             const toast = document.getElementById('toast');
             toast.textContent = msg;
             toast.className = 'toast show ' + type;
             clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 2600);
+        }
+
+        function minLabel(min) {
+            return min > 0 ? 'ab ' + min + ' cm' : 'keins';
+        }
+
+        function isBonus(species) {
+            return BONUS_SPECIES.includes(species);
         }
 
         function updatePhotoLabel() {
             const input = document.getElementById('photo');
             const label = document.getElementById('photoLabel');
             if (input.files.length > 0) {
-                label.textContent = `✅ ${input.files[0].name}`;
+                label.textContent = '✅ Foto ausgewählt';
                 label.classList.add('has-file');
             } else {
-                label.textContent = '📷 Foto auswählen oder hier ablegen';
+                label.textContent = '📷 Foto auswählen';
                 label.classList.remove('has-file');
             }
         }
 
         function populateSelects() {
             const anglerSelect = document.getElementById('angler');
-            const fishSelect = document.getElementById('fishType');
-
+            const whoAmISelect = document.getElementById('whoAmI');
             anglers.forEach(a => {
                 anglerSelect.appendChild(new Option(a, a));
+                whoAmISelect.appendChild(new Option(a, a));
             });
 
+            const fishSelect = document.getElementById('fishType');
             Object.keys(fishSpecies).sort((a, b) => a.localeCompare(b, 'de')).forEach(fish => {
-                const label = fish + (fishSpecies[fish] > 0 ? ` (${fishSpecies[fish]} cm)` : '');
+                const star = isBonus(fish) ? '⭐ ' : '';
+                const label = `${star}${fish} (${minLabel(fishSpecies[fish])})`;
                 fishSelect.appendChild(new Option(label, fish));
             });
+            fishSelect.appendChild(new Option('✏️ Andere Fischart…', '__custom__'));
 
-            const lastAngler = localStorage.getItem('angelChallengeMe');
-            if (lastAngler && anglers.includes(lastAngler)) {
-                anglerSelect.value = lastAngler;
+            fishSelect.addEventListener('change', () => {
+                document.getElementById('customFishGroup').style.display =
+                    fishSelect.value === '__custom__' ? 'block' : 'none';
+            });
+
+            const me = localStorage.getItem('angelChallengeMe');
+            if (me && anglers.includes(me)) {
+                anglerSelect.value = me;
+                whoAmISelect.value = me;
             }
         }
 
@@ -640,25 +1075,41 @@
             window.scrollTo(0, 0);
         }
 
+        function setMe(name) {
+            if (name) {
+                localStorage.setItem('angelChallengeMe', name);
+                document.getElementById('angler').value = name;
+            } else {
+                localStorage.removeItem('angelChallengeMe');
+            }
+            renderTable();
+        }
+
+        // ===== EINTRAG =====
         document.getElementById('catchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const angler = document.getElementById('angler').value;
-            const fishType = document.getElementById('fishType').value;
-            const length = parseInt(document.getElementById('length').value);
+            let fishType = document.getElementById('fishType').value;
+            if (fishType === '__custom__') {
+                fishType = document.getElementById('customFish').value.trim();
+                if (!fishType) {
+                    showToast('❌ Bitte Fischart eingeben', 'error');
+                    return;
+                }
+            }
+            const length = parseInt(document.getElementById('length').value, 10);
             const photo = document.getElementById('photo').files[0];
             const minSize = fishSpecies[fishType] || 0;
 
             if (!photo) {
-                showToast('❌ Foto erforderlich!', 'error');
+                showToast('❌ Foto ist Pflicht!', 'error');
                 return;
             }
-
             if (isNaN(length) || length <= 0) {
                 showToast('❌ Gültige Länge eingeben!', 'error');
                 return;
             }
-
             if (length < minSize) {
                 showToast(`❌ Mindestmaß ${fishType}: ${minSize} cm!`, 'error');
                 return;
@@ -671,32 +1122,79 @@
             formData.append('weight', document.getElementById('weight').value);
             formData.append('notes', document.getElementById('notes').value);
             formData.append('photo', photo);
+            formData.append('deviceId', deviceId);
 
             try {
                 const res = await fetch('/api/catches', { method: 'POST', body: formData });
-                if (!res.ok) throw new Error('Upload fehlgeschlagen');
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    showToast('❌ ' + (data.error || 'Fehler beim Speichern'), 'error');
+                    return;
+                }
 
                 localStorage.setItem('angelChallengeMe', angler);
+                document.getElementById('whoAmI').value = angler;
                 showToast(`✅ ${fishType} (${length} cm) gespeichert!`);
                 document.getElementById('catchForm').reset();
+                document.getElementById('angler').value = angler;
+                document.getElementById('customFishGroup').style.display = 'none';
                 updatePhotoLabel();
                 loadCatches();
             } catch (e) {
-                showToast('❌ Fehler beim Speichern', 'error');
+                showToast('❌ Keine Verbindung', 'error');
             }
         });
 
-        function calculatePoints(angler) {
-            const anglerCatches = catches.filter(c => c.angler === angler);
-            if (anglerCatches.length === 0) {
-                return { totalLength: 0, lengthPoints: 0, speciesPoints: 0, biggestFishBonus: 0, totalPoints: 0, count: 0, species: 0 };
-            }
+        // ===== PUNKTEBERECHNUNG (exakt wie die Sheet-Formeln) =====
+        // Pro Art zählt nur der größte Fang (Regel 10)
+        function bestPerSpecies(angler) {
+            const best = {};
+            catches.filter(c => c.angler === angler).forEach(c => {
+                if (!best[c.fishType] || c.length > best[c.fishType]) {
+                    best[c.fishType] = c.length;
+                }
+            });
+            return best;
+        }
 
-            const totalLength = anglerCatches.reduce((sum, c) => sum + c.length, 0);
-            const uniqueSpecies = new Set(anglerCatches.map(c => c.fishType)).size;
-            const lengthPoints = Math.floor(totalLength / 10) * 5;
-            const speciesPoints = uniqueSpecies * 10;
-            const biggestFishBonus = uniqueSpecies * 10;
+        // Größter Fang je Bonus-Art über ALLE Angler (für 10er-Bonus)
+        function globalMaxPerBonusSpecies() {
+            const max = {};
+            BONUS_SPECIES.forEach(s => {
+                catches.filter(c => c.fishType === s).forEach(c => {
+                    if (!max[s] || c.length > max[s]) max[s] = c.length;
+                });
+            });
+            return max;
+        }
+
+        function calculatePoints(angler) {
+            const best = bestPerSpecies(angler);
+            const speciesCaught = Object.keys(best);
+            const count = catches.filter(c => c.angler === angler).length;
+
+            // cm Gesamt = Summe der besten Fänge je Art (wie SUM(C4:C46))
+            const totalLength = speciesCaught.reduce((sum, s) => sum + best[s], 0);
+
+            // Bonus-Arten-cm (zählen nochmal)
+            const bonusCm = BONUS_SPECIES.reduce((sum, s) => sum + (best[s] || 0), 0);
+
+            // Punkte (cm) = INT(gesamt/10) + INT(bonusCm/10)
+            const lengthPoints = Math.floor(totalLength / 10) + Math.floor(bonusCm / 10);
+
+            // Punkte (Fischarten) = Arten*3 + Bonus-Arten*3
+            const bonusSpeciesCaught = BONUS_SPECIES.filter(s => best[s] !== undefined).length;
+            const speciesPoints = speciesCaught.length * 3 + bonusSpeciesCaught * 3;
+
+            // Bonus Größter Fisch: 10 je Bonus-Art, wenn eigener Bestwert = globales Maximum
+            const globalMax = globalMaxPerBonusSpecies();
+            let biggestFishBonus = 0;
+            BONUS_SPECIES.forEach(s => {
+                if (best[s] !== undefined && best[s] === globalMax[s]) {
+                    biggestFishBonus += 10;
+                }
+            });
+
             const totalPoints = lengthPoints + speciesPoints + biggestFishBonus;
 
             return {
@@ -705,102 +1203,217 @@
                 speciesPoints,
                 biggestFishBonus,
                 totalPoints,
-                count: anglerCatches.length,
-                species: uniqueSpecies
+                count,
+                species: speciesCaught.length
             };
         }
 
+        // Platzierung wie im Sheet: niedrigste Punktzahl = "Schneider" (alle bei Gleichstand)
+        function getStandings() {
+            const standings = anglers.map(angler => ({ angler, points: calculatePoints(angler) }))
+                .sort((a, b) => b.points.totalPoints - a.points.totalPoints);
+
+            const minPoints = Math.min(...standings.map(s => s.points.totalPoints));
+
+            let lastPoints = null, lastRank = 0;
+            standings.forEach((s, i) => {
+                if (s.points.totalPoints === lastPoints) {
+                    s.rank = lastRank; // Gleichstand = gleicher Platz
+                } else {
+                    s.rank = i + 1;
+                    lastRank = s.rank;
+                    lastPoints = s.points.totalPoints;
+                }
+                s.isSchneider = s.points.totalPoints === minPoints;
+            });
+            return standings;
+        }
+
+        function rankSymbol(s) {
+            if (s.isSchneider) return ' 🤡';
+            if (s.rank === 1) return ' 🏆';
+            if (s.rank === 2) return ' 🥈';
+            if (s.rank === 3) return ' 🥉';
+            return '';
+        }
+
+        // ===== RENDERING =====
         function renderDashboard() {
             const container = document.getElementById('dashboardCards');
             container.innerHTML = '';
 
-            const sorted = anglers.map(a => ({ angler: a, points: calculatePoints(a) }))
-                .sort((a, b) => b.points.totalPoints - a.points.totalPoints);
-
-            sorted.forEach(({ angler, points }, index) => {
-                // Pokale für Platz 1-3 (nur mit Punkten), Schneider-Emoji bei 0 Punkten
-                let symbol = '';
-                let placeLabel = `Platz ${index + 1}`;
-                if (points.totalPoints === 0) {
-                    symbol = ' 🤡';
-                    placeLabel = 'Schneider';
-                } else if (index === 0) {
-                    symbol = ' 🏆';
-                } else if (index === 1) {
-                    symbol = ' 🥈';
-                } else if (index === 2) {
-                    symbol = ' 🥉';
-                }
+            getStandings().forEach(s => {
+                const p = s.points;
+                const topClass = !s.isSchneider && s.rank <= 3 ? `top-${s.rank}` : '';
+                const placeLabel = s.isSchneider ? 'Schneider' : `Platz ${s.rank}`;
 
                 const card = document.createElement('div');
-                card.className = 'card';
+                card.className = 'card ' + topClass;
                 card.innerHTML = `
-                    <div class="card-header">${index + 1}. ${angler}${symbol}<span style="float:right;font-size:0.75em;color:var(--text-light);font-weight:600;">${placeLabel}</span></div>
-                    <div class="stat-row"><span class="stat-label">Gesamtlänge:</span><span class="stat-value">${points.totalLength} cm</span></div>
-                    <div class="stat-row"><span class="stat-label">Fischarten:</span><span class="stat-value">${points.species}</span></div>
-                    <div class="stat-row"><span class="stat-label">Fänge:</span><span class="stat-value">${points.count}</span></div>
-                    <div class="stat-row" style="margin-top:8px;border-top:2px solid var(--border);padding-top:8px;"><span class="stat-label">Punkte (cm):</span><span class="stat-value">${points.lengthPoints}</span></div>
-                    <div class="stat-row"><span class="stat-label">Punkte (Arten):</span><span class="stat-value">${points.speciesPoints}</span></div>
-                    <div class="stat-row"><span class="stat-label">Bonus größter Fisch:</span><span class="stat-value">${points.biggestFishBonus}</span></div>
-                    <div class="stat-row" style="font-size:1.05em;font-weight:700;border-top:2px solid var(--primary);padding-top:8px;margin-top:8px;"><span class="stat-label">GESAMT:</span><span class="stat-value total">${points.totalPoints} Pkt</span></div>
+                    <div class="card-header">${s.rank}. ${s.angler}${rankSymbol(s)}<span style="float:right;font-size:0.75em;color:var(--text-light);font-weight:600;">${placeLabel}</span></div>
+                    <div class="stat-row"><span class="stat-label">cm Gesamt:</span><span class="stat-value">${p.totalLength} cm</span></div>
+                    <div class="stat-row"><span class="stat-label">Fischarten:</span><span class="stat-value">${p.species}</span></div>
+                    <div class="stat-row"><span class="stat-label">Fänge:</span><span class="stat-value">${p.count}</span></div>
+                    <div class="stat-row" style="margin-top:8px;border-top:2px solid var(--border);padding-top:8px;"><span class="stat-label">Punkte (cm):</span><span class="stat-value">${p.lengthPoints}</span></div>
+                    <div class="stat-row"><span class="stat-label">Punkte (Fischarten):</span><span class="stat-value">${p.speciesPoints}</span></div>
+                    <div class="stat-row"><span class="stat-label">Bonus Größter Fisch:</span><span class="stat-value">${p.biggestFishBonus}</span></div>
+                    <div class="stat-row" style="font-size:1.05em;font-weight:700;border-top:2px solid var(--primary);padding-top:8px;margin-top:8px;"><span class="stat-label">GESAMTPUNKTE:</span><span class="stat-value total">${p.totalPoints}</span></div>
                 `;
                 container.appendChild(card);
             });
         }
 
+        // Fangbuch: Fischarten als Zeilen (wie das Sheet), Fänge als Chips
         function renderTable() {
-            const body = document.getElementById('catchesBody');
-            body.innerHTML = '';
+            const container = document.getElementById('speciesTableContainer');
+            const me = localStorage.getItem('angelChallengeMe') || '';
 
-            const sorted = [...catches].sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Arten aus dem Sheet + zusätzlich eingetragene eigene Arten (die 5 freien Zeilen)
+            const sheetSpecies = Object.keys(fishSpecies).sort((a, b) => a.localeCompare(b, 'de'));
+            const customSpecies = [...new Set(catches.map(c => c.fishType))]
+                .filter(s => !fishSpecies.hasOwnProperty(s))
+                .sort((a, b) => a.localeCompare(b, 'de'));
+            const allSpecies = [...sheetSpecies, ...customSpecies];
 
-            sorted.forEach(c => {
-                const row = body.insertRow();
-                const photoDateStr = c.photoDate ? `<div style="font-size:0.8em; color:var(--text-light);">📷 ${c.photoDate}</div>` : '';
-                row.innerHTML = `
-                    <td>${c.angler}</td>
-                    <td>${c.fishType}</td>
-                    <td><span style="cursor:pointer; color:var(--primary); font-weight:700;" onclick="showPhotoModal('${c.photo}', '${c.angler} - ${c.fishType} ${c.length}cm')">${c.length} cm</span>${photoDateStr}</td>
-                    <td>${c.weight ? c.weight + ' kg' : '-'}</td>
-                    <td><img src="${c.photo}" class="photo-thumb" onclick="showPhotoModal('${c.photo}', '${c.angler} - ${c.fishType} ${c.length}cm')"></td>
-                    <td><button class="btn-danger" onclick="deleteCatch('${c.id}')">🗑️</button></td>
-                `;
+            let html = '<div class="species-table-head"><span>Fischart · Mindestmaß</span><span>Fänge (antippen = Foto)</span></div>';
+
+            allSpecies.forEach(species => {
+                const speciesCatches = catches
+                    .filter(c => c.fishType === species)
+                    .sort((a, b) => b.length - a.length);
+                const minSize = fishSpecies[species] || 0;
+                const isEmpty = speciesCatches.length === 0;
+                const star = isBonus(species) ? '⭐ ' : '';
+                const isCustom = !fishSpecies.hasOwnProperty(species);
+
+                html += `<div class="species-row ${isEmpty ? 'empty' : ''}">
+                    <div class="species-head">
+                        <span class="species-name">${star}${species}${isCustom ? ' ✏️' : ''}</span>
+                        <span class="species-min">${minLabel(minSize)}</span>
+                    </div>`;
+
+                if (!isEmpty) {
+                    html += '<div class="species-catches">';
+                    speciesCatches.forEach((c, i) => {
+                        const isBest = i === 0;
+                        const mine = me && c.angler === me;
+                        const dateStr = c.photoDate || c.date || '';
+                        const safeInfo = `${c.angler} – ${c.fishType} ${c.length} cm`.replace(/'/g, '');
+                        html += `<div class="catch-chip ${isBest ? 'best' : ''}" onclick="showPhotoModal('${c.photo}', '${safeInfo}')">
+                            <span class="chip-angler">${isBest ? '👑 ' : ''}${c.angler}</span>
+                            <span class="chip-len">${c.length} cm</span>
+                            <span class="chip-date">📷 ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
+                            ${mine ? `<button class="chip-del" onclick="event.stopPropagation(); deleteCatch('${c.id}')">🗑️</button>` : ''}
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
             });
+
+            container.innerHTML = html;
+            renderAuswertung();
+        }
+
+        // Auswertung unter dem Fangbuch (wie im Sheet: cm Gesamt, Punkte, Platz)
+        function renderAuswertung() {
+            const container = document.getElementById('auswertungContainer');
+            let html = '<div class="auswertung-head">📊 Auswertung</div>';
+
+            getStandings().forEach(s => {
+                const topClass = !s.isSchneider && s.rank <= 3 ? 'top3' : '';
+                const platz = s.isSchneider ? '🤡 Schneider' : `${s.rank}.${rankSymbol(s)}`;
+                html += `<div class="aus-row ${topClass}">
+                    <span class="aus-platz">${platz}</span>
+                    <span class="aus-name">${s.angler}</span>
+                    <span class="aus-cm">${s.points.totalLength} cm · ${s.points.species} Arten</span>
+                    <span class="aus-punkte">${s.points.totalPoints} P</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
         }
 
         function renderLeaderboard() {
-            const rankings = anglers.map(angler => ({ angler, points: calculatePoints(angler) }))
-                .sort((a, b) => b.points.totalPoints - a.points.totalPoints);
-
             const container = document.getElementById('leaderboardContainer');
             let html = '<div class="leaderboard">';
-            rankings.forEach((item, index) => {
-                const rankClass = index < 3 ? `rank-${index + 1}` : '';
-                let medal = '';
-                if (item.points.totalPoints === 0) {
-                    medal = '🤡 ';
-                } else if (index === 0) {
-                    medal = '🏆 ';
-                } else if (index === 1) {
-                    medal = '🥈 ';
-                } else if (index === 2) {
-                    medal = '🥉 ';
-                }
+
+            getStandings().forEach(s => {
+                const rankClass = !s.isSchneider && s.rank <= 3 ? `rank-${s.rank}` : '';
+                const medal = s.isSchneider ? '🤡 ' : (s.rank === 1 ? '🏆 ' : s.rank === 2 ? '🥈 ' : s.rank === 3 ? '🥉 ' : '');
                 html += `
                     <div class="leaderboard-item">
-                        <div class="rank ${rankClass}">${index + 1}</div>
+                        <div class="rank ${rankClass}">${s.isSchneider ? '🤡' : s.rank}</div>
                         <div class="leaderboard-info">
-                            <div class="leaderboard-name">${medal}${item.angler}</div>
-                            <div class="leaderboard-stats">${item.points.count} Fänge · ${item.points.species} Arten · ${item.points.totalLength} cm</div>
+                            <div class="leaderboard-name">${medal}${s.angler}${s.isSchneider ? ' (Schneider)' : ''}</div>
+                            <div class="leaderboard-stats">${s.points.count} Fänge · ${s.points.species} Arten · ${s.points.totalLength} cm</div>
                         </div>
-                        <div class="leaderboard-score">${item.points.totalPoints}</div>
+                        <div class="leaderboard-score">${s.points.totalPoints}</div>
                     </div>
                 `;
             });
+
             html += '</div>';
             container.innerHTML = html;
         }
 
+        // Rekorde: größter Fisch pro Art — wer hält ihn, cm anklickbar → Foto
+        function renderRekorde() {
+            const container = document.getElementById('rekordeContainer');
+
+            if (catches.length === 0) {
+                container.innerHTML = '<div class="rekord-leer">🎣 Noch keine Fänge — der erste Fisch jeder Art ist automatisch Rekord!</div>';
+                return;
+            }
+
+            // Pro Art den größten Fang finden (bei Gleichstand: alle Halter)
+            const records = {};
+            catches.forEach(c => {
+                const r = records[c.fishType];
+                if (!r || c.length > r.length) {
+                    records[c.fishType] = { length: c.length, holders: [c] };
+                } else if (c.length === r.length && !r.holders.some(h => h.angler === c.angler)) {
+                    r.holders.push(c);
+                }
+            });
+
+            // Sortiert nach Länge absteigend — der dickste Brocken zuoberst
+            const sorted = Object.entries(records).sort((a, b) => b[1].length - a[1].length);
+
+            container.innerHTML = sorted.map(([species, r]) => {
+                const star = isBonus(species) ? '⭐ ' : '';
+                return r.holders.map((c, i) => {
+                    const safeInfo = `${c.angler} – ${species} ${c.length} cm`.replace(/'/g, '');
+                    const dateStr = c.photoDate || c.date || '';
+                    return `<div class="rekord-row">
+                        <img src="${c.photo}" class="rekord-thumb" loading="lazy" onclick="showPhotoModal('${c.photo}', '${safeInfo}')" alt="${species}">
+                        <div class="rekord-info">
+                            <div class="rekord-art">${star}${species}${r.holders.length > 1 ? ' (geteilt)' : ''}</div>
+                            <div class="rekord-halter">👑 ${c.angler} · 📷 ${dateStr}${c.weight ? ' · ' + c.weight + ' kg' : ''}</div>
+                        </div>
+                        <span class="rekord-cm" onclick="showPhotoModal('${c.photo}', '${safeInfo}')">${c.length} cm</span>
+                    </div>`;
+                }).join('');
+            }).join('');
+        }
+
+        function renderInfo() {
+            document.getElementById('regelnContainer').innerHTML = REGELN.map((r, i) =>
+                `<div class="regel-item"><span class="regel-nr">${i + 1}.</span><span>${r}</span></div>`
+            ).join('');
+
+            const currentMonth = new Date().toLocaleDateString('de-DE', { month: 'long', timeZone: 'Europe/Berlin' });
+            document.getElementById('kalenderContainer').innerHTML = Object.entries(FANGKALENDER).map(([monat, arten]) => {
+                const aktuell = monat === currentMonth;
+                return `<details class="monat ${aktuell ? 'aktuell' : ''}" ${aktuell ? 'open' : ''}>
+                    <summary>${aktuell ? '📍 ' : ''}${monat}</summary>
+                    <div class="monat-arten">${arten.map(a => `<span class="art-tag">${isBonus(a) ? '⭐ ' : ''}${a}</span>`).join('')}</div>
+                </details>`;
+            }).join('');
+        }
+
+        // ===== FOTO-MODAL =====
         function showPhotoModal(photoSrc, info) {
             document.getElementById('modalPhoto').src = photoSrc;
             document.getElementById('modalInfo').textContent = info;
@@ -813,11 +1426,16 @@
 
         document.getElementById('photoModal').addEventListener('click', closePhotoModal);
 
+        // ===== LÖSCHEN (nur eigene) =====
         async function deleteCatch(id) {
-            if (!confirm('Fang löschen?')) return;
+            if (!confirm('Fang wirklich löschen?')) return;
             try {
-                const res = await fetch(`/api/catches/${id}`, { method: 'DELETE' });
-                if (!res.ok) throw new Error('Löschen fehlgeschlagen');
+                const res = await fetch(`/api/catches/${id}?deviceId=${encodeURIComponent(deviceId)}`, { method: 'DELETE' });
+                if (res.status === 403) {
+                    showToast('🚫 Nur eigene Fänge löschbar!', 'error');
+                    return;
+                }
+                if (!res.ok) throw new Error();
                 showToast('🗑️ Fang gelöscht');
                 loadCatches();
             } catch (e) {
@@ -825,21 +1443,35 @@
             }
         }
 
+        // ===== DATEN LADEN (Live-Sync alle 5 Sek.) =====
         async function loadCatches() {
             try {
                 const res = await fetch('/api/catches');
-                catches = await res.json();
-                renderDashboard();
-                renderTable();
-                renderLeaderboard();
-            } catch (e) {
-                console.error('Fehler beim Laden:', e);
-            }
+                const data = await res.json();
+                if (JSON.stringify(data) !== JSON.stringify(catches)) {
+                    catches = data;
+                    renderAll();
+                } else if (!document.body.dataset.rendered) {
+                    renderAll();
+                    document.body.dataset.rendered = '1';
+                }
+            } catch (e) { /* offline — nächster Versuch */ }
         }
 
+        function renderAll() {
+            renderDashboard();
+            renderTable();
+            renderLeaderboard();
+            renderRekorde();
+        }
+
+        // ===== START =====
         populateSelects();
+        renderInfo();
+        renderAll();
         loadCatches();
-        setInterval(loadCatches, 5000); // Alle 5 Sekunden aktualisieren
+        setInterval(loadCatches, 5000);
+        window.addEventListener('focus', loadCatches);
     </script>
 </body>
 </html>
