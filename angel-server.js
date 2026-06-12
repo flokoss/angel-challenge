@@ -121,7 +121,14 @@ app.post('/api/catches', catchUpload, (req, res) => {
   }
 
   const photoPath = path.join(uploadsDir, mainPhoto.filename);
-  const photoDate = readPhotoDate(photoPath);
+  // EXIF zuerst; komprimierte Fotos haben kein EXIF mehr → Aufnahmedatum vom Handy nutzen
+  let photoDate = readPhotoDate(photoPath);
+  if (!photoDate && req.body.photoTakenAt) {
+    const taken = new Date(parseInt(req.body.photoTakenAt, 10));
+    if (!isNaN(taken) && taken.getFullYear() > 2000) {
+      photoDate = taken.toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' });
+    }
+  }
   const photos = allFiles.map(f => `/uploads/${f.filename}`);
 
   const newCatch = {

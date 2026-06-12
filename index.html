@@ -665,6 +665,49 @@
             color: white;
         }
 
+        /* Lade-Spinner im Speichern-Button */
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            vertical-align: -4px;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        button:disabled {
+            opacity: 0.85;
+            transform: none;
+        }
+
+        .upload-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+            display: none;
+        }
+
+        .upload-bar.active {
+            display: block;
+        }
+
+        .upload-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--success), var(--primary-light));
+            border-radius: 3px;
+            transition: width 0.25s;
+        }
+
         /* Toast */
         .toast {
             position: fixed;
@@ -900,6 +943,7 @@
                         </div>
 
                         <button type="submit" id="saveBtn" class="btn-primary" style="width:100%; padding:16px; font-size:1.05em;">✅ Fang speichern</button>
+                        <div class="upload-bar" id="uploadBar"><div class="upload-bar-fill" id="uploadBarFill"></div></div>
                     </form>
                 </div>
             </div>
@@ -1128,6 +1172,51 @@
             renderTable();
         }
 
+        // ===== FOTO-KOMPRIMIERUNG (macht den Upload 10-20x schneller) =====
+        async function compressImage(file, maxDim = 1800, quality = 0.82) {
+            try {
+                let bmp;
+                try {
+                    bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
+                } catch (e) {
+                    bmp = await createImageBitmap(file);
+                }
+                const scale = Math.min(1, maxDim / Math.max(bmp.width, bmp.height));
+                const w = Math.round(bmp.width * scale);
+                const h = Math.round(bmp.height * scale);
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+                const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', quality));
+                if (blob && blob.size > 0 && blob.size < file.size) {
+                    const name = (file.name || 'foto').replace(/\.\w+$/, '') + '.jpg';
+                    return new File([blob], name, { type: 'image/jpeg', lastModified: file.lastModified });
+                }
+            } catch (e) { /* Komprimierung nicht möglich → Original hochladen */ }
+            return file;
+        }
+
+        // Upload mit echtem Fortschritt (Prozent)
+        function uploadWithProgress(formData, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/catches');
+                xhr.timeout = 120000;
+                xhr.upload.onprogress = (e) => {
+                    if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+                };
+                xhr.onload = () => {
+                    let data = {};
+                    try { data = JSON.parse(xhr.responseText); } catch (e) { }
+                    resolve({ ok: xhr.status >= 200 && xhr.status < 300, status: xhr.status, data });
+                };
+                xhr.onerror = () => reject(new Error('network'));
+                xhr.ontimeout = () => reject(new Error('timeout'));
+                xhr.send(formData);
+            });
+        }
+
         // ===== EINTRAG =====
         document.getElementById('catchForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1158,29 +1247,44 @@
                 return;
             }
 
-            const formData = new FormData();
-            formData.append('angler', angler);
-            formData.append('fishType', fishType);
-            formData.append('length', length);
-            formData.append('weight', document.getElementById('weight').value);
-            formData.append('notes', document.getElementById('notes').value);
-            formData.append('photo', photo);
-            const extras = document.getElementById('extraPhotos').files;
-            for (let i = 0; i < Math.min(extras.length, 5); i++) {
-                formData.append('extraPhotos', extras[i]);
-            }
-            formData.append('deviceId', deviceId);
-
-            // Button sperren + Fortschritt anzeigen (große Handy-Fotos brauchen Zeit)
             const saveBtn = document.getElementById('saveBtn');
+            const bar = document.getElementById('uploadBar');
+            const barFill = document.getElementById('uploadBarFill');
             saveBtn.disabled = true;
-            saveBtn.textContent = '⏳ Wird hochgeladen…';
 
             try {
-                const res = await fetch('/api/catches', { method: 'POST', body: formData });
-                const data = await res.json().catch(() => ({}));
+                // 1. Fotos verkleinern (8 MB Handy-Foto → ~0,4 MB)
+                saveBtn.innerHTML = '<span class="spinner"></span>Fotos werden verkleinert…';
+                const photoSmall = await compressImage(photo);
+                const extras = document.getElementById('extraPhotos').files;
+                const extrasSmall = [];
+                for (let i = 0; i < Math.min(extras.length, 5); i++) {
+                    extrasSmall.push(await compressImage(extras[i]));
+                }
+
+                const formData = new FormData();
+                formData.append('angler', angler);
+                formData.append('fishType', fishType);
+                formData.append('length', length);
+                formData.append('weight', document.getElementById('weight').value);
+                formData.append('notes', document.getElementById('notes').value);
+                formData.append('photo', photoSmall);
+                extrasSmall.forEach(f => formData.append('extraPhotos', f));
+                formData.append('photoTakenAt', photo.lastModified || '');
+                formData.append('deviceId', deviceId);
+
+                // 2. Hochladen mit echter Prozentanzeige
+                bar.classList.add('active');
+                barFill.style.width = '0%';
+                saveBtn.innerHTML = '<span class="spinner"></span>Wird hochgeladen… 0%';
+
+                const res = await uploadWithProgress(formData, (pct) => {
+                    barFill.style.width = pct + '%';
+                    saveBtn.innerHTML = `<span class="spinner"></span>Wird hochgeladen… ${pct}%`;
+                });
+
                 if (!res.ok) {
-                    showToast('❌ ' + (data.error || 'Fehler beim Speichern (' + res.status + ')'), 'error');
+                    showToast('❌ ' + (res.data.error || 'Fehler beim Speichern (' + res.status + ')'), 'error');
                     return;
                 }
 
@@ -1198,6 +1302,8 @@
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.textContent = '✅ Fang speichern';
+                bar.classList.remove('active');
+                barFill.style.width = '0%';
             }
         });
 
