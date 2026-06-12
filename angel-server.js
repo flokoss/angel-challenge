@@ -178,6 +178,16 @@ app.delete('/api/catches/:id', (req, res) => {
 // Health-Check (für Uptime-Pings)
 app.get('/health', (req, res) => res.json({ ok: true, catches: catches.length }));
 
+// Upload-Fehler immer als verständliches JSON zurückgeben (nie stumm scheitern)
+app.use((err, req, res, next) => {
+  console.error('Upload-Fehler:', err.code || '', err.message);
+  let msg = 'Upload fehlgeschlagen — bitte nochmal versuchen';
+  if (err.code === 'LIMIT_FILE_SIZE') msg = 'Foto zu groß (max. 15 MB pro Bild)';
+  else if (err.code === 'LIMIT_UNEXPECTED_FILE') msg = 'Zu viele Fotos (max. 1 Messfoto + 5 Fangfotos)';
+  else if (err.message === 'Nur Bilder erlaubt') msg = 'Nur Bilddateien erlaubt';
+  res.status(400).json({ error: msg });
+});
+
 app.listen(PORT, () => {
   console.log(`🎣 Angel Challenge Server läuft auf Port ${PORT}`);
 });

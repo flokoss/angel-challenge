@@ -881,7 +881,7 @@
                         <div class="form-group">
                             <label>📏 Messfoto – PFLICHT * (Fisch mit Maßband/Zollstock)</label>
                             <div class="file-input-wrapper" style="position:relative;">
-                                <input type="file" id="photo" accept="image/*" required onchange="updatePhotoLabel()">
+                                <input type="file" id="photo" accept="image/*" onchange="updatePhotoLabel()">
                                 <label for="photo" class="file-input-label" id="photoLabel">📏 Messfoto auswählen</label>
                             </div>
                         </div>
@@ -899,7 +899,7 @@
                             <textarea id="notes" rows="2" placeholder="Ort, Köder, Wetter..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn-primary" style="width:100%; padding:16px; font-size:1.05em;">✅ Fang speichern</button>
+                        <button type="submit" id="saveBtn" class="btn-primary" style="width:100%; padding:16px; font-size:1.05em;">✅ Fang speichern</button>
                     </form>
                 </div>
             </div>
@@ -1171,11 +1171,16 @@
             }
             formData.append('deviceId', deviceId);
 
+            // Button sperren + Fortschritt anzeigen (große Handy-Fotos brauchen Zeit)
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = true;
+            saveBtn.textContent = '⏳ Wird hochgeladen…';
+
             try {
                 const res = await fetch('/api/catches', { method: 'POST', body: formData });
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) {
-                    showToast('❌ ' + (data.error || 'Fehler beim Speichern'), 'error');
+                    showToast('❌ ' + (data.error || 'Fehler beim Speichern (' + res.status + ')'), 'error');
                     return;
                 }
 
@@ -1189,7 +1194,10 @@
                 updateExtraLabel();
                 loadCatches();
             } catch (e) {
-                showToast('❌ Keine Verbindung', 'error');
+                showToast('❌ Keine Verbindung — bitte nochmal versuchen', 'error');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.textContent = '✅ Fang speichern';
             }
         });
 
