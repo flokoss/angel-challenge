@@ -638,12 +638,49 @@
         }
 
         .art-tag {
-            background: rgba(26, 71, 42, 0.07);
             border-radius: 12px;
             padding: 4px 10px;
             font-size: 0.78em;
             font-weight: 600;
-            color: var(--text);
+        }
+
+        /* 3 Fangchancen-Stufen wie in der Original-Excel */
+        .art-tag.lvl3 {
+            background: #00b050;
+            color: white;
+        }
+
+        .art-tag.lvl2 {
+            background: #92d050;
+            color: #1a3a12;
+        }
+
+        .art-tag.lvl1 {
+            background: #ffd400;
+            color: #5a4a00;
+        }
+
+        .kalender-legende {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px 14px 14px 14px;
+            font-size: 0.76em;
+            color: var(--text-light);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .legende-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legende-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
         }
 
         /* Buttons */
@@ -1062,19 +1099,20 @@
             'Pro Fischart und Angler zählt EIN Fang. Wer mehrere Fische derselben Art fängt — es zählt automatisch der größte.'
         ];
 
+        // Fangkalender mit 3 Fangchancen-Stufen (aus Original-Excel): 3 = dunkelgrün (sehr gut), 2 = hellgrün (gut), 1 = gelb (ok)
         const FANGKALENDER = {
-            'Januar': ['Äsche','Barsch','Döbel','Grundel','Hecht','Meerforelle','Quappe','Rapfen','Rotauge','Zander'],
-            'Februar': ['Äsche','Barsch','Döbel','Grundel','Hecht','Meerforelle','Quappe','Rapfen','Rotauge','Rotfeder','Schleie','Zander'],
-            'März': ['Aal','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels'],
-            'April': ['Aal','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels'],
-            'Mai': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'Juni': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'Juli': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'August': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'September': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Meerforelle','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'Oktober': ['Aal','Äsche','Bachforelle','Bachsaibling','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Rapfen','Reg.-Forelle','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'November': ['Äsche','Barbe','Barsch','Brasse','Döbel','Graskarpfen','Grundel','Gründling','Hecht','Karpfen','Quappe','Rapfen','Rotauge','Rotfeder','Schleie','Wels','Zander'],
-            'Dezember': ['Äsche','Barsch','Döbel','Hecht','Karpfen','Quappe','Rapfen','Rotauge','Zander']
+            'Januar': { 'Quappe': 3, 'Barsch': 2, 'Hecht': 2, 'Zander': 2, 'Äsche': 2, 'Döbel': 1, 'Grundel': 1, 'Meerforelle': 1, 'Rapfen': 1, 'Rotauge': 1 },
+            'Februar': { 'Grundel': 2, 'Hecht': 2, 'Meerforelle': 2, 'Quappe': 2, 'Zander': 2, 'Barsch': 1, 'Döbel': 1, 'Rapfen': 1, 'Rotauge': 1, 'Rotfeder': 1, 'Schleie': 1, 'Äsche': 1 },
+            'März': { 'Meerforelle': 3, 'Bachsaibling': 2, 'Döbel': 2, 'Grundel': 2, 'Reg.-Forelle': 2, 'Rotauge': 2, 'Schleie': 2, 'Aal': 1, 'Barbe': 1, 'Barsch': 1, 'Brasse': 1, 'Graskarpfen': 1, 'Gründling': 1, 'Karpfen': 1, 'Rapfen': 1, 'Rotfeder': 1, 'Wels': 1 },
+            'April': { 'Bachforelle': 3, 'Bachsaibling': 3, 'Meerforelle': 3, 'Reg.-Forelle': 3, 'Rotauge': 3, 'Schleie': 3, 'Aal': 2, 'Barsch': 2, 'Brasse': 2, 'Döbel': 2, 'Graskarpfen': 2, 'Grundel': 2, 'Hecht': 2, 'Karpfen': 2, 'Rotfeder': 2, 'Barbe': 1, 'Gründling': 1, 'Rapfen': 1, 'Wels': 1 },
+            'Mai': { 'Aal': 3, 'Bachforelle': 3, 'Bachsaibling': 3, 'Barsch': 3, 'Brasse': 3, 'Döbel': 3, 'Grundel': 3, 'Hecht': 3, 'Karpfen': 3, 'Reg.-Forelle': 3, 'Rotauge': 3, 'Rotfeder': 3, 'Schleie': 3, 'Barbe': 2, 'Graskarpfen': 2, 'Gründling': 2, 'Meerforelle': 2, 'Wels': 2, 'Zander': 2, 'Rapfen': 1, 'Äsche': 1 },
+            'Juni': { 'Aal': 3, 'Bachsaibling': 3, 'Barsch': 3, 'Brasse': 3, 'Döbel': 3, 'Graskarpfen': 3, 'Grundel': 3, 'Gründling': 3, 'Karpfen': 3, 'Rotauge': 3, 'Rotfeder': 3, 'Schleie': 3, 'Wels': 3, 'Zander': 3, 'Bachforelle': 2, 'Barbe': 2, 'Hecht': 2, 'Meerforelle': 2, 'Rapfen': 2, 'Reg.-Forelle': 2, 'Äsche': 1 },
+            'Juli': { 'Aal': 3, 'Bachsaibling': 3, 'Barbe': 3, 'Barsch': 3, 'Brasse': 3, 'Döbel': 3, 'Graskarpfen': 3, 'Grundel': 3, 'Gründling': 3, 'Karpfen': 3, 'Rapfen': 3, 'Rotauge': 3, 'Rotfeder': 3, 'Schleie': 3, 'Wels': 3, 'Bachforelle': 2, 'Hecht': 2, 'Meerforelle': 2, 'Reg.-Forelle': 2, 'Zander': 2, 'Äsche': 1 },
+            'August': { 'Aal': 3, 'Bachsaibling': 3, 'Barbe': 3, 'Barsch': 3, 'Brasse': 3, 'Döbel': 3, 'Graskarpfen': 3, 'Grundel': 3, 'Gründling': 3, 'Karpfen': 3, 'Rapfen': 3, 'Rotauge': 3, 'Rotfeder': 3, 'Wels': 3, 'Bachforelle': 2, 'Hecht': 2, 'Reg.-Forelle': 2, 'Schleie': 2, 'Zander': 2, 'Meerforelle': 1, 'Äsche': 1 },
+            'September': { 'Barsch': 3, 'Brasse': 3, 'Döbel': 3, 'Graskarpfen': 3, 'Hecht': 3, 'Karpfen': 3, 'Rapfen': 3, 'Rotauge': 3, 'Rotfeder': 3, 'Aal': 2, 'Bachforelle': 2, 'Bachsaibling': 2, 'Barbe': 2, 'Grundel': 2, 'Gründling': 2, 'Schleie': 2, 'Wels': 2, 'Zander': 2, 'Äsche': 2, 'Meerforelle': 1, 'Reg.-Forelle': 1 },
+            'Oktober': { 'Barsch': 3, 'Hecht': 3, 'Zander': 3, 'Äsche': 3, 'Barbe': 2, 'Brasse': 2, 'Döbel': 2, 'Graskarpfen': 2, 'Grundel': 2, 'Gründling': 2, 'Karpfen': 2, 'Rapfen': 2, 'Rotauge': 2, 'Rotfeder': 2, 'Wels': 2, 'Aal': 1, 'Bachforelle': 1, 'Bachsaibling': 1, 'Reg.-Forelle': 1, 'Schleie': 1 },
+            'November': { 'Zander': 3, 'Äsche': 3, 'Barsch': 2, 'Döbel': 2, 'Hecht': 2, 'Rotauge': 2, 'Barbe': 1, 'Brasse': 1, 'Graskarpfen': 1, 'Grundel': 1, 'Gründling': 1, 'Karpfen': 1, 'Quappe': 1, 'Rapfen': 1, 'Rotfeder': 1, 'Schleie': 1, 'Wels': 1 },
+            'Dezember': { 'Äsche': 3, 'Barsch': 2, 'Hecht': 2, 'Quappe': 2, 'Zander': 2, 'Döbel': 1, 'Karpfen': 1, 'Rapfen': 1, 'Rotauge': 1 }
         };
 
         // ===== STATE =====
@@ -1569,13 +1607,27 @@
             ).join('');
 
             const currentMonth = new Date().toLocaleDateString('de-DE', { month: 'long', timeZone: 'Europe/Berlin' });
-            document.getElementById('kalenderContainer').innerHTML = Object.entries(FANGKALENDER).map(([monat, arten]) => {
+
+            const legende = `<div class="kalender-legende">
+                <span class="legende-item"><span class="legende-dot" style="background:#00b050;"></span>sehr gut</span>
+                <span class="legende-item"><span class="legende-dot" style="background:#92d050;"></span>gut</span>
+                <span class="legende-item"><span class="legende-dot" style="background:#ffd400;"></span>ok</span>
+            </div>`;
+
+            const monate = Object.entries(FANGKALENDER).map(([monat, arten]) => {
                 const aktuell = monat === currentMonth;
+                // Nach Fangchance absteigend sortieren (3 → 2 → 1), bei Gleichstand alphabetisch
+                const sorted = Object.entries(arten).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'de'));
+                const tags = sorted.map(([art, lvl]) =>
+                    `<span class="art-tag lvl${lvl}">${isBonus(art) ? '⭐ ' : ''}${art}</span>`
+                ).join('');
                 return `<details class="monat ${aktuell ? 'aktuell' : ''}" ${aktuell ? 'open' : ''}>
                     <summary>${aktuell ? '📍 ' : ''}${monat}</summary>
-                    <div class="monat-arten">${arten.map(a => `<span class="art-tag">${isBonus(a) ? '⭐ ' : ''}${a}</span>`).join('')}</div>
+                    <div class="monat-arten">${tags}</div>
                 </details>`;
             }).join('');
+
+            document.getElementById('kalenderContainer').innerHTML = legende + monate;
         }
 
         // ===== FOTO-GALERIE (mehrere Fotos pro Fang durchblättern) =====
