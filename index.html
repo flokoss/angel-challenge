@@ -1194,8 +1194,18 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Notizen – optional</label>
-                            <textarea id="notes" rows="2" placeholder="Ort, Köder, Wetter..."></textarea>
+                            <label>🪱 Köder – optional</label>
+                            <input type="text" id="koeder" maxlength="60" placeholder="z.B. Tauwurm, Spinner, Boilie...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>🌊 Gewässer – optional</label>
+                            <input type="text" id="gewaesser" maxlength="60" placeholder="z.B. Stör, Weddelbrook, Elbe...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>📝 Weitere Infos – optional</label>
+                            <textarea id="notes" rows="2" placeholder="Wetter, Uhrzeit, Methode..."></textarea>
                         </div>
 
                         <button type="submit" id="saveBtn" class="btn-primary" style="width:100%; padding:16px; font-size:1.05em;">✅ Fang speichern</button>
@@ -1207,12 +1217,6 @@
 
         <!-- FANGBUCH (sortierbar nach Fischart oder Angler) -->
         <div id="fangbuch" class="tab-content">
-            <div class="table-toolbar">
-                <label>🙋 Ich bin:</label>
-                <select id="whoAmI" onchange="setMe(this.value)">
-                    <option value="">-- wählen --</option>
-                </select>
-            </div>
             <div class="sort-toggle">
                 <span class="sort-label">Sortieren nach:</span>
                 <button class="sort-btn active" id="sortFisch" onclick="setSort('fisch')">🐟 Fischart</button>
@@ -1390,10 +1394,8 @@
 
         function populateSelects() {
             const anglerSelect = document.getElementById('angler');
-            const whoAmISelect = document.getElementById('whoAmI');
             anglers.forEach(a => {
                 anglerSelect.appendChild(new Option(a, a));
-                whoAmISelect.appendChild(new Option(a, a));
             });
 
             const fishSelect = document.getElementById('fishType');
@@ -1409,10 +1411,10 @@
                     fishSelect.value === '__custom__' ? 'block' : 'none';
             });
 
+            // Letzten genutzten Angler im Formular vormerken (jeder nutzt sein eigenes Handy)
             const me = localStorage.getItem('angelChallengeMe');
             if (me && anglers.includes(me)) {
                 anglerSelect.value = me;
-                whoAmISelect.value = me;
             }
         }
 
@@ -1540,6 +1542,8 @@
                 formData.append('length', length);
                 formData.append('weight', document.getElementById('weight').value);
                 formData.append('notes', document.getElementById('notes').value);
+                formData.append('koeder', document.getElementById('koeder').value);
+                formData.append('gewaesser', document.getElementById('gewaesser').value);
                 formData.append('photo', photoSmall);
                 extrasSmall.forEach(f => formData.append('extraPhotos', f));
                 formData.append('photoTakenAt', photo.lastModified || '');
@@ -1561,7 +1565,6 @@
                 }
 
                 localStorage.setItem('angelChallengeMe', angler);
-                document.getElementById('whoAmI').value = angler;
                 showToast(`✅ ${fishType} (${length} cm) gespeichert!`);
                 document.getElementById('catchForm').reset();
                 document.getElementById('angler').value = angler;
@@ -1699,18 +1702,20 @@
 
         // Einzelnen Fang als Chip rendern (für beide Sortiermodi)
         function catchChip(c, opts) {
-            const me = localStorage.getItem('angelChallengeMe') || '';
-            const mine = me && c.angler === me;
+            // Löschknopf nur bei eigenen Fängen (vom Server pro Gerät markiert)
+            const mine = !!c.mine;
             const dateStr = c.photoDate || c.date || '';
             const nPhotos = photosOf(c).length;
             const fotoBadge = nPhotos > 1 ? `📷×${nPhotos}` : '📷';
+            const pts = pointsForCatch(c);
+            const ptsBadge = pts > 0 ? ` · 🎯${pts}` : '';
             // Im Fischart-Modus zeigt der Chip den Angler, im Angler-Modus die Fischart
             const label = opts.show === 'angler'
                 ? `${opts.crown ? '👑 ' : ''}${c.angler}`
                 : `${opts.crown ? '👑 ' : ''}${isBonus(c.fishType) ? '⭐ ' : ''}${c.fishType}`;
             return `<div class="catch-chip ${opts.best ? 'best' : ''}" onclick="openGallery('${c.id}')">
                 <span class="chip-angler">${label}</span>
-                <span class="chip-len">${c.length} cm</span>
+                <span class="chip-len">${c.length} cm${ptsBadge}</span>
                 <span class="chip-date">${fotoBadge} ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
                 ${mine ? `<button class="chip-del" onclick="event.stopPropagation(); deleteCatch('${c.id}')">🗑️</button>` : ''}
             </div>`;
@@ -1971,7 +1976,7 @@
         // ===== DATEN LADEN (Live-Sync alle 5 Sek.) =====
         async function loadCatches() {
             try {
-                const res = await fetch('/api/catches');
+                const res = await fetch('/api/catches?deviceId=' + encodeURIComponent(deviceId));
                 const data = await res.json();
                 if (JSON.stringify(data) !== JSON.stringify(catches)) {
                     catches = data;
@@ -2045,6 +2050,8 @@
                 const chips = [];
                 chips.push(`<span class="feed-chip">📏 ${c.length} cm</span>`);
                 if (c.weight) chips.push(`<span class="feed-chip">⚖️ ${c.weight} kg</span>`);
+                if (c.koeder) chips.push(`<span class="feed-chip">🪱 ${c.koeder}</span>`);
+                if (c.gewaesser) chips.push(`<span class="feed-chip">🌊 ${c.gewaesser}</span>`);
                 if (pts > 0) chips.push(`<span class="feed-chip">🎯 +${pts} Punkte</span>`);
                 if (isArtRecord) chips.push(`<span class="feed-chip record">👑 Rekord</span>`);
 

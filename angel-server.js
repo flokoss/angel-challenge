@@ -105,7 +105,7 @@ const catchUpload = upload.fields([
 ]);
 
 app.post('/api/catches', catchUpload, (req, res) => {
-  const { angler, fishType, length, weight, notes, deviceId } = req.body;
+  const { angler, fishType, length, weight, notes, koeder, gewaesser, deviceId } = req.body;
   const mainPhoto = req.files && req.files.photo && req.files.photo[0];
   const extraPhotos = (req.files && req.files.extraPhotos) || [];
   const allFiles = [mainPhoto, ...extraPhotos].filter(Boolean);
@@ -146,6 +146,8 @@ app.post('/api/catches', catchUpload, (req, res) => {
     length: parseInt(length, 10),
     weight: weight ? parseFloat(weight) : null,
     notes: (notes || '').trim(),
+    koeder: (koeder || '').trim(),
+    gewaesser: (gewaesser || '').trim(),
     photo: photos[0],
     photos: photos,
     date: new Date().toLocaleDateString('de-DE', { timeZone: 'Europe/Berlin' }),
@@ -160,9 +162,14 @@ app.post('/api/catches', catchUpload, (req, res) => {
   res.json(publicCatch);
 });
 
-// API: Alle Fänge (ohne deviceId — die bleibt geheim)
+// API: Alle Fänge — markiert pro Fang, ob er vom anfragenden Gerät stammt ("mine"),
+// ohne die geheime deviceId preiszugeben. So zeigt die App den Löschknopf nur bei eigenen Fängen.
 app.get('/api/catches', (req, res) => {
-  res.json(catches.map(({ deviceId, ...c }) => c));
+  const reqDevice = req.query.deviceId || '';
+  res.json(catches.map(({ deviceId, ...c }) => ({
+    ...c,
+    mine: !!reqDevice && deviceId === reqDevice
+  })));
 });
 
 // API: Fang löschen — nur vom eigenen Gerät
