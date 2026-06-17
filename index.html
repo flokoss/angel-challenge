@@ -866,17 +866,19 @@
             border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-around;
-            padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+            padding: 5px 0 max(5px, env(safe-area-inset-bottom));
             box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
             z-index: 100;
         }
 
+        /* 6 Tabs: kompakt, damit alle nebeneinander passen */
         .nav-item {
             flex: 1;
+            min-width: 0;
             text-align: center;
-            padding: 8px 2px;
+            padding: 6px 1px;
             color: var(--text-light);
-            font-size: 0.68em;
+            font-size: 0.6em;
             cursor: pointer;
             transition: all 0.2s;
             border-top: 3px solid transparent;
@@ -891,7 +893,7 @@
         }
 
         .nav-icon {
-            font-size: 1.5em;
+            font-size: 1.4em;
             margin-bottom: 2px;
             display: block;
         }
@@ -899,6 +901,9 @@
         .nav-label {
             display: block;
             font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .empty-state {
@@ -911,6 +916,217 @@
             font-size: 3em;
             margin-bottom: 12px;
         }
+
+        /* Sortier-Umschalter im Fangbuch */
+        .sort-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px 0 12px;
+            flex-wrap: wrap;
+        }
+
+        .sort-label {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.4);
+            font-size: 0.82em;
+            font-weight: 600;
+        }
+
+        .sort-btn {
+            padding: 7px 14px;
+            min-height: auto;
+            font-size: 0.85em;
+            background: rgba(255,255,255,0.85);
+            color: var(--text);
+            border-radius: 20px;
+        }
+
+        .sort-btn.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+        }
+
+        /* Angler-Gruppen im Fangbuch */
+        .angler-group-head {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 11px 14px;
+            font-weight: 700;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .angler-group-head .ag-stats {
+            font-size: 0.78em;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        /* ===== FEED (Neueste Fänge, Social-Media-Stil) ===== */
+        .feed-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+            margin: 12px;
+        }
+
+        .feed-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+        }
+
+        .feed-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.05em;
+            flex-shrink: 0;
+        }
+
+        .feed-head-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .feed-angler {
+            font-weight: 700;
+            color: var(--text);
+            font-size: 0.98em;
+        }
+
+        .feed-when {
+            font-size: 0.75em;
+            color: var(--text-light);
+        }
+
+        .feed-points {
+            background: var(--gold);
+            color: #5a4a00;
+            font-weight: 700;
+            font-size: 0.82em;
+            padding: 4px 10px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Bild-Karussell */
+        .feed-carousel {
+            position: relative;
+            background: #000;
+        }
+
+        .feed-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .feed-track::-webkit-scrollbar { display: none; }
+
+        .feed-slide {
+            flex: 0 0 100%;
+            scroll-snap-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .feed-slide img {
+            width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .feed-dots {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            pointer-events: none;
+        }
+
+        .feed-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .feed-dot.active {
+            background: white;
+        }
+
+        .feed-photocount {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            font-size: 0.72em;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .feed-body {
+            padding: 12px 14px;
+        }
+
+        .feed-title {
+            font-weight: 700;
+            font-size: 1.15em;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .feed-title .star { color: var(--gold); }
+
+        .feed-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .feed-chip {
+            background: rgba(26, 71, 42, 0.08);
+            color: var(--text);
+            font-size: 0.82em;
+            font-weight: 600;
+            padding: 4px 11px;
+            border-radius: 20px;
+        }
+
+        .feed-chip.record {
+            background: rgba(241, 196, 15, 0.2);
+            color: #8a6d00;
+        }
+
+        .feed-notes {
+            font-size: 0.9em;
+            color: var(--text);
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -920,9 +1136,9 @@
     </header>
 
     <div class="container">
-        <!-- DASHBOARD -->
-        <div id="dashboard" class="tab-content active">
-            <div class="grid" id="dashboardCards"></div>
+        <!-- FEED: Neueste Fänge (Social-Media-Stil) -->
+        <div id="feed" class="tab-content active">
+            <div id="feedContainer"></div>
         </div>
 
         <!-- EINTRAG -->
@@ -989,7 +1205,7 @@
             </div>
         </div>
 
-        <!-- FANGBUCH (Aufbau wie das Original-Sheet) -->
+        <!-- FANGBUCH (sortierbar nach Fischart oder Angler) -->
         <div id="fangbuch" class="tab-content">
             <div class="table-toolbar">
                 <label>🙋 Ich bin:</label>
@@ -997,14 +1213,19 @@
                     <option value="">-- wählen --</option>
                 </select>
             </div>
-            <div class="sheet-title">Länge der Fänge in CM</div>
+            <div class="sort-toggle">
+                <span class="sort-label">Sortieren nach:</span>
+                <button class="sort-btn active" id="sortFisch" onclick="setSort('fisch')">🐟 Fischart</button>
+                <button class="sort-btn" id="sortAngler" onclick="setSort('angler')">🙋 Angler</button>
+            </div>
             <div class="species-table" id="speciesTableContainer"></div>
             <div class="auswertung" id="auswertungContainer"></div>
         </div>
 
-        <!-- RANKING -->
+        <!-- RANKING (Dashboard + Leaderboard zusammengeführt) -->
         <div id="ranking" class="tab-content">
             <div id="leaderboardContainer"></div>
+            <div class="grid" id="dashboardCards"></div>
         </div>
 
         <!-- REKORDE: größter Fisch pro Art -->
@@ -1041,9 +1262,9 @@
     </div>
 
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('dashboard', this)">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Dashboard</span>
+        <div class="nav-item active" onclick="switchTab('feed', this)">
+            <span class="nav-icon">🐠</span>
+            <span class="nav-label">Neueste</span>
         </div>
         <div class="nav-item" onclick="switchTab('eintrag', this)">
             <span class="nav-icon">📝</span>
@@ -1210,6 +1431,16 @@
             } else {
                 localStorage.removeItem('angelChallengeMe');
             }
+            renderTable();
+        }
+
+        // Sortierung des Fangbuchs: 'fisch' (nach Fischart) oder 'angler' (nach Angler)
+        let sortMode = localStorage.getItem('angelSortMode') || 'fisch';
+        function setSort(mode) {
+            sortMode = mode;
+            localStorage.setItem('angelSortMode', mode);
+            document.getElementById('sortFisch').classList.toggle('active', mode === 'fisch');
+            document.getElementById('sortAngler').classList.toggle('active', mode === 'angler');
             renderTable();
         }
 
@@ -1443,7 +1674,7 @@
         // ===== RENDERING =====
         function renderDashboard() {
             const container = document.getElementById('dashboardCards');
-            container.innerHTML = '';
+            container.innerHTML = '<div style="grid-column:1/-1; color:white; text-shadow:1px 1px 3px rgba(0,0,0,0.4); font-weight:700; font-size:1.05em; padding:4px 4px 0 4px;">📋 Details &amp; Punkte je Angler</div>';
 
             getStandings().forEach(s => {
                 const p = s.points;
@@ -1466,12 +1697,39 @@
             });
         }
 
-        // Fangbuch: Fischarten als Zeilen (wie das Sheet), Fänge als Chips
+        // Einzelnen Fang als Chip rendern (für beide Sortiermodi)
+        function catchChip(c, opts) {
+            const me = localStorage.getItem('angelChallengeMe') || '';
+            const mine = me && c.angler === me;
+            const dateStr = c.photoDate || c.date || '';
+            const nPhotos = photosOf(c).length;
+            const fotoBadge = nPhotos > 1 ? `📷×${nPhotos}` : '📷';
+            // Im Fischart-Modus zeigt der Chip den Angler, im Angler-Modus die Fischart
+            const label = opts.show === 'angler'
+                ? `${opts.crown ? '👑 ' : ''}${c.angler}`
+                : `${opts.crown ? '👑 ' : ''}${isBonus(c.fishType) ? '⭐ ' : ''}${c.fishType}`;
+            return `<div class="catch-chip ${opts.best ? 'best' : ''}" onclick="openGallery('${c.id}')">
+                <span class="chip-angler">${label}</span>
+                <span class="chip-len">${c.length} cm</span>
+                <span class="chip-date">${fotoBadge} ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
+                ${mine ? `<button class="chip-del" onclick="event.stopPropagation(); deleteCatch('${c.id}')">🗑️</button>` : ''}
+            </div>`;
+        }
+
+        // Fangbuch: umschaltbar nach Fischart oder Angler
         function renderTable() {
             const container = document.getElementById('speciesTableContainer');
-            const me = localStorage.getItem('angelChallengeMe') || '';
 
-            // Arten aus dem Sheet + zusätzlich eingetragene eigene Arten (die 5 freien Zeilen)
+            if (sortMode === 'angler') {
+                renderTableByAngler(container);
+            } else {
+                renderTableBySpecies(container);
+            }
+            renderAuswertung();
+        }
+
+        // Sortierung nach Fischart (wie Original-Sheet): unter jeder Art die Fänge
+        function renderTableBySpecies(container) {
             const sheetSpecies = Object.keys(fishSpecies).sort((a, b) => a.localeCompare(b, 'de'));
             const customSpecies = [...new Set(catches.map(c => c.fishType))]
                 .filter(s => !fishSpecies.hasOwnProperty(s))
@@ -1496,26 +1754,48 @@
                 if (!isEmpty) {
                     html += '<div class="species-catches">';
                     speciesCatches.forEach((c, i) => {
-                        const isBest = i === 0;
-                        const mine = me && c.angler === me;
-                        const dateStr = c.photoDate || c.date || '';
-                        const nPhotos = photosOf(c).length;
-                        const fotoBadge = nPhotos > 1 ? `📷×${nPhotos}` : '📷';
-                        html += `<div class="catch-chip ${isBest ? 'best' : ''}" onclick="openGallery('${c.id}')">
-                            <span class="chip-angler">${isBest ? '👑 ' : ''}${c.angler}</span>
-                            <span class="chip-len">${c.length} cm</span>
-                            <span class="chip-date">${fotoBadge} ${dateStr}${c.weight ? '<br>' + c.weight + ' kg' : ''}</span>
-                            ${mine ? `<button class="chip-del" onclick="event.stopPropagation(); deleteCatch('${c.id}')">🗑️</button>` : ''}
-                        </div>`;
+                        html += catchChip(c, { show: 'angler', best: i === 0, crown: i === 0 });
                     });
                     html += '</div>';
                 }
-
                 html += '</div>';
             });
 
             container.innerHTML = html;
-            renderAuswertung();
+        }
+
+        // Sortierung nach Angler: unter jedem Angler seine Fänge (nur die mit Fängen)
+        function renderTableByAngler(container) {
+            // Angler nach Punkten sortieren (Beste zuerst), nur die mit mind. 1 Fang
+            const withCatches = getStandings().filter(s => s.points.count > 0);
+
+            let html = '<div class="species-table-head"><span>Angler</span><span>Fänge (antippen = Fotos)</span></div>';
+
+            if (withCatches.length === 0) {
+                html += '<div class="species-row empty"><div class="species-head"><span class="species-name" style="color:#b8c2c8;">Noch keine Fänge eingetragen</span></div></div>';
+                container.innerHTML = html;
+                return;
+            }
+
+            withCatches.forEach(s => {
+                const myCatches = catches
+                    .filter(c => c.angler === s.angler)
+                    .sort((a, b) => b.length - a.length);
+
+                html += `<div class="angler-group-head">
+                    <span>${rankSymbol(s).trim()} ${s.angler}</span>
+                    <span class="ag-stats">${s.points.totalPoints} P · ${s.points.species} Arten · ${s.points.totalLength} cm</span>
+                </div>`;
+                html += '<div class="species-row"><div class="species-catches">';
+                myCatches.forEach(c => {
+                    // 👑 wenn dieser Fang der Rekord seiner Art ist (über alle Angler)
+                    const isArtRecord = !catches.some(o => o.fishType === c.fishType && o.length > c.length);
+                    html += catchChip(c, { show: 'fisch', best: isArtRecord, crown: isArtRecord });
+                });
+                html += '</div></div>';
+            });
+
+            container.innerHTML = html;
         }
 
         // Auswertung unter dem Fangbuch (wie im Sheet: cm Gesamt, Punkte, Platz)
@@ -1703,7 +1983,104 @@
             } catch (e) { /* offline — nächster Versuch */ }
         }
 
+        // Punkte, die GENAU dieser Fang zur Wertung des Anglers beiträgt (nach Sheet-Regeln)
+        function pointsForCatch(c) {
+            // Zählt nur, wenn es der größte Fang dieser Art für diesen Angler ist
+            const best = bestPerSpecies(c.angler);
+            if (best[c.fishType] !== c.length) return 0;
+            const factor = isBonus(c.fishType) ? 2 : 1;
+            let pts = Math.floor(c.length / 10) * factor; // cm-Punkte
+            pts += 3 * factor;                              // Art-Punkte
+            // Rekord-Bonus: bei Bonus-Arten +10, wenn globaler Größter
+            if (isBonus(c.fishType)) {
+                const globalMax = globalMaxPerBonusSpecies();
+                if (c.length === globalMax[c.fishType]) pts += 10;
+            }
+            return pts;
+        }
+
+        function timeAgo(c) {
+            const ts = c.createdAt || 0;
+            if (!ts) return c.date || '';
+            const diff = Date.now() - ts;
+            const min = Math.floor(diff / 60000);
+            if (min < 1) return 'gerade eben';
+            if (min < 60) return `vor ${min} Min`;
+            const std = Math.floor(min / 60);
+            if (std < 24) return `vor ${std} Std`;
+            const tage = Math.floor(std / 24);
+            if (tage < 7) return `vor ${tage} Tag${tage > 1 ? 'en' : ''}`;
+            return 'am ' + (c.date || '');
+        }
+
+        // FEED: neueste Fänge oben, großes Foto, Bild-Karussell, Punkte pro Fang
+        function renderFeed() {
+            const container = document.getElementById('feedContainer');
+
+            if (catches.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🐠</div><p>Noch keine Fänge — sei der Erste!</p></div>';
+                return;
+            }
+
+            // Neueste zuerst
+            const sorted = [...catches].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            container.innerHTML = sorted.map(c => {
+                const photos = photosOf(c);
+                const initial = (c.angler || '?').charAt(0).toUpperCase();
+                const pts = pointsForCatch(c);
+                const isArtRecord = !catches.some(o => o.fishType === c.fishType && o.length > c.length);
+                const star = isBonus(c.fishType) ? '<span class="star">⭐</span> ' : '';
+
+                // Bild-Karussell
+                const slides = photos.map(p =>
+                    `<div class="feed-slide"><img src="${p}" loading="lazy" onclick="openGallery('${c.id}')" alt="${c.fishType}"></div>`
+                ).join('');
+                const dots = photos.length > 1
+                    ? `<div class="feed-dots">${photos.map((_, i) => `<span class="feed-dot ${i === 0 ? 'active' : ''}"></span>`).join('')}</div>`
+                    : '';
+                const photoCount = photos.length > 1 ? `<div class="feed-photocount">📷 1/${photos.length}</div>` : '';
+
+                // Meta-Chips
+                const chips = [];
+                chips.push(`<span class="feed-chip">📏 ${c.length} cm</span>`);
+                if (c.weight) chips.push(`<span class="feed-chip">⚖️ ${c.weight} kg</span>`);
+                if (pts > 0) chips.push(`<span class="feed-chip">🎯 +${pts} Punkte</span>`);
+                if (isArtRecord) chips.push(`<span class="feed-chip record">👑 Rekord</span>`);
+
+                return `<div class="feed-card">
+                    <div class="feed-head">
+                        <div class="feed-avatar">${initial}</div>
+                        <div class="feed-head-info">
+                            <div class="feed-angler">${c.angler}</div>
+                            <div class="feed-when">${timeAgo(c)}${c.photoDate ? ' · 📷 ' + c.photoDate : ''}</div>
+                        </div>
+                    </div>
+                    <div class="feed-carousel">
+                        <div class="feed-track" onscroll="feedScroll(this)">${slides}</div>
+                        ${photoCount}${dots}
+                    </div>
+                    <div class="feed-body">
+                        <div class="feed-title">${star}${c.fishType}</div>
+                        <div class="feed-meta">${chips.join('')}</div>
+                        ${c.notes ? `<div class="feed-notes">${c.notes}</div>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // Karussell: aktiven Punkt + Zähler beim Wischen aktualisieren
+        function feedScroll(track) {
+            const idx = Math.round(track.scrollLeft / track.clientWidth);
+            const carousel = track.parentElement;
+            const dots = carousel.querySelectorAll('.feed-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+            const counter = carousel.querySelector('.feed-photocount');
+            if (counter) counter.textContent = `📷 ${idx + 1}/${dots.length}`;
+        }
+
         function renderAll() {
+            renderFeed();
             renderDashboard();
             renderTable();
             renderLeaderboard();
@@ -1712,6 +2089,7 @@
 
         // ===== START =====
         populateSelects();
+        setSort(sortMode); // Sortier-Umschalter auf gespeicherten Stand setzen
         renderInfo();
         renderAll();
         loadCatches();
